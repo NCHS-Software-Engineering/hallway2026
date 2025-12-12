@@ -1,0 +1,148 @@
+.App {
+  text-align: center;
+}
+
+body {
+  background-color: #eea8ab;
+}
+
+header p::before {
+  content: url("./img/NCHSlogo.png");
+  margin-right: 15px;
+}
+
+header p, footer p {
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-size: 35px;
+  color: #dbdbdb;
+  margin: 0;
+}
+
+header, footer {
+  margin-bottom: 30px;
+  background-color: #db4a2d;
+  padding-top: 4px;
+  border-bottom: 4px ridge #dbdbdb;
+}
+
+select {
+  border-radius: 0 8px 8px 0;
+  border-left: none;
+  font-size: 16px;
+}
+
+optgroup:disabled {
+  color: white;
+  background-color: #555;
+}
+
+label::after {
+  content: "#";
+  font-size: 14px;
+  padding-left: 2px;
+  margin-left: 5px;
+  border: 1px solid #767676;
+  border-right: none;
+}
+
+ul {
+  list-style-type: none;
+}
+
+img {
+  max-width: 50%;
+  max-height: auto;
+  transform: scale(1.4); /* Shrinks the image to 50% */
+  position: relative;
+  top: 200px;
+}
+
+img.w-full.h-auto {
+  transform: translate(100px, 0) scale(1.5);
+  border: 2px ridge #db4a2d;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+button {
+  font-size: 18px !important; /* override React aria-button styling */
+  padding: 2px 10px;
+  margin: 5px !important; /* override React aria-button styling */
+  border-radius: 8px;
+}
+
+img ~ button {
+  position: absolute;
+} img ~ button:active {
+  background-color: hsla(0, 0%, 94%, 0.502);
+} @media screen and (max-width: 1150px) {
+  img ~ button:not(#svg-button-base) {border-radius: 8px !important; border-width: 2px !important}
+}
+
+ul :nth-child(even) button {
+  border-color: #949615;
+  background-color: hsl(56, 92%, 51%);
+} ul :nth-child(even) button:active {background-color: hsla(56, 92%, 51%, 50%)}
+
+ul :nth-child(odd) button {
+  border-color: #839615;
+  background-color: hsl(71, 92%, 51%);
+} ul :nth-child(odd) button:active {background-color: hsla(71, 92%, 51%, 50%)}
+
+figure {
+  margin-inline: 33% 0;
+  margin-block: 0;
+}
+
+#aside, #floor {
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  top: 108px;
+  background-color: coral;
+  padding: 10px 10px 1300px;
+  margin: 0;
+  border-right-style: ridge;
+  border-right-width: 4px;
+  min-width: 151px;
+} #floor {
+  z-index: 1;
+  /* background-color: set by React; */
+  border-style: ridge;
+  border-width: 4px 0;
+  padding-bottom: 5px;
+  top: 630px;
+}
+
+@media screen and (max-width: 909px) {
+  #aside {
+    width: 100%;
+    top: 1600px;
+    padding: 0;
+    border-top-style: ridge;
+    border-top-width: 4px;
+    border-right-style: none;
+  } #aside p {display: inline-flex; padding: 2px;}
+    #aside hr ~ hr {display: none;}
+  #floor {border-right-width: 4px;}
+  figure {
+    margin-inline: calc(100% - 600px) 0;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  figure {
+    margin-inline: 0;
+  }
+}
+
+@media screen and (max-width: 310px) {
+  #aside {
+    top: calc(1300px + 10%);
+  }
+}

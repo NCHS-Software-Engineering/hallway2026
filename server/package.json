@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "http": "^0.0.1-security",
+    "node": "^18.20.6",
+    "node-hid": "^3.1.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-scripts": "^5.0.1",
+    "web-vitals": "^4.2.4"
+  }
+}
