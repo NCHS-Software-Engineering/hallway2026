@@ -90,7 +90,7 @@ def process(curPaths, node_map):
 
 
 def main():
-    csv_file = "/Users/yutian/Desktop/APCS/Hallway-Nav/client/src/Cord/p3.csv"  # Changed backslash to forward slash for better compatibility (can adjust name for file selection)
+    csv_file = "client\public\p3.csv"  # Changed backslash to forward slash for better compatibility (can adjust name for file selection)
     reader = CSVReader(csv_file)
 
     #print("Node Map:", reader.node_map)

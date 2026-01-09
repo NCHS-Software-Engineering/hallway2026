@@ -87,7 +87,7 @@ public class CSVReader {
 
     public static void main(String[] args) throws Exception {
         JSONObject obj = new JSONObject();
-        String csvFile = "/Users/yutian/Desktop/APCS/Hallway-Nav/client/Pathfinding/p3.csv";
+        String csvFile = "client/Pathfinding/p3.csv";
         CSVReader reader = new CSVReader(csvFile);
 
         List<String> paths = new ArrayList<>();

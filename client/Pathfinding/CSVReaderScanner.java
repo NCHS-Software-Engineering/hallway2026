@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class CSVReaderScanner {
     public static void main(String[] args) {
-        String csvFile = "/Users/yutian/Desktop/APCS/Hallway-Nav/client/Pathfinding/p3.csv";
+        String csvFile = "client/Pathfinding/p3.csv";
         String delimiter = ",";
 
         try (Scanner scanner = new Scanner(new File(csvFile))) {
