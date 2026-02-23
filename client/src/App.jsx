@@ -123,7 +123,7 @@ function App() {
               htmlFor="rooms-end"
               style={{ fontSize: '1.6rem', fontWeight: 600, marginRight: '8px' }}
             >
-              Where is...
+              Enter Your Room Number:
             </label>
             <input
               id="rooms-end"
