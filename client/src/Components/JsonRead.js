@@ -187,7 +187,7 @@ const NodeCanvas = ({
         if (Number.isNaN(nx) || Number.isNaN(ny)) continue;
         const mappedY = ih - ny - yOffset;
         ctx.beginPath();
-        ctx.arc(nx, mappedY, 8, 0, Math.PI * 2);
+        //ctx.arc(nx, mappedY, 8, 0, Math.PI * 2);
         ctx.fillStyle = 'blue';
         ctx.fill();
         ctx.strokeStyle = 'black';
@@ -228,7 +228,6 @@ const NodeCanvas = ({
 
   return (
     <div>
-      <h1>Node Network to End Node {endId}</h1>
       <canvas ref={canvasRef} style={{ border: '1px solid black' }} />
     </div>
   );
