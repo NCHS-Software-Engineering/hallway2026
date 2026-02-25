@@ -214,7 +214,7 @@ const NodeCanvas = ({
         
         // Draw stairs icon if node type is "St" and icon is loaded
         if (node.Type === 'St' && stairsIcon) {
-          ctx.drawImage(stairsIcon, nx - 8, mappedY - 8, 16, 16);
+          ctx.drawImage(stairsIcon, nx - 18, mappedY - 22, 40, 40);
         }
       }
     };
