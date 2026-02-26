@@ -168,7 +168,7 @@ const NodeCanvas = ({
 
       // Draw lines
       ctx.strokeStyle = 'red';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 7;
       ctx.lineCap = 'round';
       for (let i = 0; i < path.length - 1; i++) {
         const startNode = nodes.find(n => String(n.ID) === String(path[i]));
@@ -203,18 +203,18 @@ const NodeCanvas = ({
         // Only draw green circle at node #0 (first node)
         if (String(nodeId) === '0') {
           ctx.beginPath();
-          ctx.arc(nx, mappedY, 8, 0, Math.PI * 2);
+          ctx.arc(nx, mappedY, 12, 0, Math.PI * 2);
           ctx.fillStyle = 'green';
           ctx.fill();
           ctx.strokeStyle = 'black';
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 4;
           ctx.stroke();
           ctx.closePath();
         }
         
         // Draw stairs icon if node type is "St" and icon is loaded
         if (node.Type === 'St' && stairsIcon) {
-          ctx.drawImage(stairsIcon, nx - 18, mappedY - 22, 40, 40);
+          ctx.drawImage(stairsIcon, nx - 24, mappedY - 22, 50, 50);
         }
       }
     };
