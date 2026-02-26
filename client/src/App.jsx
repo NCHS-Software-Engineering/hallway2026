@@ -121,13 +121,13 @@ function App() {
           <li>
             
 
-            
+
             <input
               id="rooms-end"
               type="text"
               value={room}
               onChange={handleSelectChange}
-              placeholder="Enter room number"
+              placeholder="Enter Room Number"
               style={{ fontSize: '1.2rem', padding: '8px 10px', width: '320px' }}
             />
           </li>
