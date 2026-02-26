@@ -3,7 +3,7 @@
 }
 
 body {
-  background-color: #eea8ab;
+  background-color: #cccccc; /*#eea8ab*/
 }
 
 header p::before {
@@ -104,7 +104,7 @@ figure {
   z-index: 0;
   left: 0;
   top: 108px;
-  background-color: coral;
+  background-color: #e96950;
   padding: 10px 10px 1300px;
   margin: 0;
   border-right-style: ridge;

@@ -114,17 +114,14 @@ function App() {
     <>
       <div className="App">
         <header>
-          <p>Naperville Central class finder</p>
+          <p>Naperville Central Class Finder</p>
         </header>
 
         <ul>
           <li>
-            <label
-              htmlFor="rooms-end"
-              style={{ fontSize: '1.6rem', fontWeight: 600, marginRight: '8px' }}
-            >
-              Enter Your Room Number:
-            </label>
+            
+
+            
             <input
               id="rooms-end"
               type="text"
