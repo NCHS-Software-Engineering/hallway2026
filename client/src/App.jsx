@@ -13,13 +13,14 @@ import NCHSlogo from "./img/NCHSlogo.png";
 
 function App() {
   const [floor, setFloor] = useState(-1);
-  const [room, setRoom] = useState(10);
+  const [room, setRoom] = useState("");
   const [route, setRoute] = useState(null);
 
   let RenderedComponent;
   if (route === null)
   {
-
+    // show first floor map with only the start node (ID 0) highlighted
+    RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId="0" />;
   }
   else if (route.length === 2){
     RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={room}/>;
@@ -60,21 +61,21 @@ function App() {
       </div>
 
 
-      <div className="controls" style={{ display: "flex", gap: "30px", alignItems: "center" }}>
-        <label htmlFor="rooms-end" style={{ fontWeight: 500 }}>
-          Route to:
-        </label>
+      <div className="route-block">
+  <label htmlFor="rooms-end" style={{ fontWeight: 500 }}>
+    Route to:
+  </label>
 
-        <Select
-          idStr="rooms-end"
-          value={room}
-          onChange={handleSelectChange}
-        />
+  <Select
+    idStr="rooms-end"
+    value={room}
+    onChange={handleSelectChange}
+  />
 
-        <button onClick={() => setRoute(room)}>
-          Route
-        </button>
-      </div>
+  <button onClick={() => setRoute(room)}>
+    Route
+  </button>
+</div>
     </header>
 
     {/* MAIN LAYOUT */}

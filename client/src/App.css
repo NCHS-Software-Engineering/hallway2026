@@ -69,18 +69,40 @@
 
 .top-bar h1 {
   font-size: 50px;
-  font-weight: 600;
+  font-weight: 600; /* make title bold */
   letter-spacing: 1px;
-  padding-left: 35px;
+  padding-left: 40px;
 }
 
-/* larger text for the label, select and button in the top bar controls */
-.top-bar .controls label,
-.top-bar .controls select,
-.top-bar .controls button {
+/* larger text for the label, select and button in the top bar route section */
+.top-bar .route-block label,
+.top-bar .route-block select,
+.top-bar .route-block button {
   font-size: 36px;
 }
 
+/* make only the "Route to:" label black so it contrasts with the gradient */
+.top-bar .route-block label {
+  color: black;
+}
+
+/* make the dropdown transparent and remove its default caret */
+.top-bar .route-block select {
+  background-color: transparent !important; /* override inline style */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  padding-right: 0; /* no extra space needed for arrow */
+  color: black;          /* dropdown text color */
+  text-align: center;    /* center selected value */
+  text-align-last: center; /* center in some browsers */
+}
+
+.top-bar .route-block select option {
+  color: black;          /* ensure options list items are black too */
+  text-align: center;
+}
 /* =========================
    MAIN LAYOUT
 ========================= */
@@ -186,4 +208,45 @@ input, select {
 svg {
   max-width: 100%;
   height: auto;
+}
+
+/* =========================
+   ROUTE BLOCK WITH SLANTED LEFT EDGE - background of the [  "Route to: ####" ROUTE  ]
+========================= */
+
+.route-block {
+  position: relative;        /* for pseudo-element stacking */
+  display: inline-flex;      /* shrink to content width */
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px 10px 40px; /* Top, Right, Bottom, Left  */
+  border-radius: var(--radius);
+  overflow: visible;         /* allow pseudo-element to show outside edges */
+}
+
+/* pseudo-element for slanted background */ 
+.route-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;                /* behind content */
+  background: #ffffff;
+  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);  /* slanted left edge */
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+
+/* make the existing controls appear above the slanted background */
+.route-block > * {
+  position: relative;
+  z-index: 1;
+  color: var(--text-light);
+}
+
+/* responsive tweak: stack vertically on small screens */
+@media (max-width: 700px) {
+  .route-block {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

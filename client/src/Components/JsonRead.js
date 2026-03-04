@@ -103,6 +103,12 @@ const NodeCanvas = ({
 
   // Trigger search when connections and endId are available.
   useEffect(() => {
+    if (endId === "0" || endId === 0) {
+      // special-case start node: only highlight itself, no lines
+      setPath(["0"]);
+      return;
+    }
+
     if (!endId) {
       console.log('No endId set yet.');
       return;
