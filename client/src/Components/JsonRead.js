@@ -249,10 +249,8 @@ const NodeCanvas = ({
   }, [nodes, path, backgroundImage, drawCanvas]);
 
   return (
-    <div>
-      <canvas ref={canvasRef} style={{ border: '1px solid black' }} />
-    </div>
-  );
+  <canvas ref={canvasRef} />
+);
 };
 
 export default NodeCanvas;

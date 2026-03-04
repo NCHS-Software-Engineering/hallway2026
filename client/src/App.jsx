@@ -46,36 +46,60 @@ function App() {
   };
 
   return (
-    <>
-      <div className="App">
-        <header>
-          <p>Naperville Central class finder</p>
-        </header>
+  <div className="app-container">
 
-        <ul>
-          <li>
-            <label htmlFor="rooms-end">Where is...</label>
-            <Select idStr="rooms-end" value={room} onChange={handleSelectChange} />
-          </li>
-          <li>
-            <button onClick={() => setRoute(room)}>Route</button>
-          </li>
-          {RenderedComponent}
-        </ul>
+    {/* TOP BAR */}
+    <header className="top-bar">
+      <h1>Naperville Central Class Finder</h1>
 
-        <div id="aside">
-          <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025.</p>
-          <h4>Contributors</h4>
-          <hr />
-          <p>Shawn Plackiyil '25.</p>
-          <p>Daniel Kozlowski '26.</p>
-          <p>Yutian Wang '26.</p>
-          <p>Fionn McCabe-Wild '26.</p>
-          <hr />
-        </div>
+      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <label htmlFor="rooms-end" style={{ fontWeight: 500 }}>
+          Where is...
+        </label>
+
+        <Select
+          idStr="rooms-end"
+          value={room}
+          onChange={handleSelectChange}
+        />
+
+        <button onClick={() => setRoute(room)}>
+          Route
+        </button>
       </div>
-    </>
-  );
-}
+    </header>
 
+    {/* MAIN LAYOUT */}
+    <div className="main-layout">
+
+      {/* LEFT PANEL */}
+      <aside className="left-panel">
+        <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
+        <h3>Contributors</h3>
+        <hr />
+        <p>Shawn Plackiyil '25</p>
+        <p>Daniel Kozlowski '26</p>
+        <p>Yutian Wang '26</p>
+        <p>Fionn McCabe-Wild '26</p>
+      </aside>
+
+      {/* MAP SECTION */}
+      <main className="map-section">
+
+        <div className="map-card">
+          {RenderedComponent}
+        </div>
+
+        <div className="floor-label">
+          FIRST FLOOR
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+);
+}
 export default App;
+
