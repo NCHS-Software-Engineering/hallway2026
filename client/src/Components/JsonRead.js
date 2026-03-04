@@ -12,7 +12,19 @@ const NodeCanvas = ({
   const [path, setPath] = useState([]);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const [stairsIcon, setStairsIcon] = useState(null);
   const canvasRef = useRef(null);
+
+  // Load stairs icon once
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/stairs_icon.png';
+    img.onload = () => {
+      console.log('Stairs icon loaded successfully');
+      setStairsIcon(img);
+    };
+    img.onerror = () => console.error('Failed to load stairs_icon.png');
+  }, []);
 
   // Load connections and node coordinates
   useEffect(() => {
@@ -39,6 +51,7 @@ const NodeCanvas = ({
       complete: (result) => {
         const parsedNodes = result.data.map((row) => ({
           ID: row.ID,
+          Type: row.Type,
           X: parseFloat(row.X),
           Y: parseFloat(row.Y),
         }));
@@ -245,14 +258,23 @@ const NodeCanvas = ({
         const ny = parseFloat(node.Y);
         if (Number.isNaN(nx) || Number.isNaN(ny)) continue;
         const mappedY = ih - ny - yOffset;
-        ctx.beginPath();
-        ctx.arc(nx, mappedY, 8, 0, Math.PI * 2);
-        ctx.fillStyle = 'blue';
-        ctx.fill();
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.closePath();
+        
+        // Only draw green circle at node #0 (first node)
+        if (String(nodeId) === '0') {
+          ctx.beginPath();
+          ctx.arc(nx, mappedY, 12, 0, Math.PI * 2);
+          ctx.fillStyle = 'green';
+          ctx.fill();
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 4;
+          ctx.stroke();
+          ctx.closePath();
+        }
+        
+        // Draw stairs icon if node type is "St" and icon is loaded
+        if (node.Type === 'St' && stairsIcon) {
+          ctx.drawImage(stairsIcon, nx - 24, mappedY - 22, 50, 50);
+        }
       }
     };
 
@@ -275,7 +297,7 @@ const NodeCanvas = ({
         }
       }, 0);
     }
-  }, [backgroundImage, path, nodes]);
+  }, [backgroundImage, path, nodes, stairsIcon]);
 
   // Call drawCanvas when both path and nodes are ready
   useEffect(() => {
@@ -287,7 +309,6 @@ const NodeCanvas = ({
 
   return (
     <div>
-      <h1>Node Network to End Node {endId}</h1>
       <canvas ref={canvasRef} style={{ border: '1px solid black' }} />
     </div>
   );
