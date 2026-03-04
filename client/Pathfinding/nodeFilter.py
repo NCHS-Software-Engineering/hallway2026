@@ -15,7 +15,7 @@ class CSVReader:
                         print(f"Skipping invalid line: {','.join(line)}")
                         continue
 
-                    node_id = line[0].strip()
+                    node_id = line[ ].strip()
                     node = [value.strip() for value in line[:5]]
                     node += [value.replace('"', '').strip() for value in line[5:]]
 

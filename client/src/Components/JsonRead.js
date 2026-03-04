@@ -52,41 +52,93 @@ const NodeCanvas = ({
     });
   }, [src, csvSrc]);
 
-  // Robust path finder: normalize target and attempt to find it in nested arrays
-  const findPath = useCallback((data, target) => {
+  // Helper: generate candidate tokens for a requested room ID.
+  // This ensures "33" can match "033" or "0033" if your data uses leading-zero room tokens.
+  const roomCandidates = useCallback((raw) => {
+    const s = String(raw).trim();
+    const set = new Set();
+    set.add(s);
+    // strip leading zeros and re-add canonical forms
+    const stripped = s.replace(/^0+/, '') || '0';
+    set.add(stripped);
+    // prefixed single zero (common room token format)
+    if (!s.startsWith('0')) set.add('0' + s);
+    // pad to 3 digits (if IDs use 3 digits)
+    set.add(stripped.padStart(3, '0'));
+    // prefixed zero + padded
+    set.add('0' + stripped.padStart(3, '0'));
+    return Array.from(set);
+  }, []);
+
+  // Find a stored path that terminates at target (preferred).
+  // This avoids selecting arrays where the target appears in the middle.
+  const findStoredPathEndingAtTarget = useCallback((data, target) => {
     if (!data) return null;
+    const candidates = roomCandidates(target);
+    let found = null;
 
-    // Normalize the search target(s) as strings; try a few common formats
-    const t = String(target);
-    const candidates = Array.from(new Set([
-      t,
-      t.startsWith('0') ? t.replace(/^0+/, '') : '0' + t, // "051" <-> "51"
-      t.padStart(3, '0'),
-      t.padStart(2, '0'),
-    ]));
-
-    function search(arr) {
-      for (const item of arr) {
-        if (Array.isArray(item)) {
-          const result = search(item);
-          if (result) return result;
-        } else {
-          const itemStr = String(item);
-          if (candidates.includes(itemStr)) {
-            return arr; // return the array that contains the match
-          }
+    function walk(node) {
+      if (!node) return false;
+      if (Array.isArray(node)) {
+        const last = node.length ? String(node[node.length - 1]).trim() : null;
+        if (last && candidates.includes(last)) {
+          found = node.slice();
+          return true;
+        }
+        // Recurse into nested arrays
+        for (const child of node) {
+          if (Array.isArray(child) && walk(child)) return true;
+        }
+      } else if (typeof node === 'object') {
+        for (const k of Object.keys(node)) {
+          if (walk(node[k])) return true;
         }
       }
-      return null;
+      return false;
     }
 
-    const found = search(data);
+    walk(data);
     if (found) {
       setPath(found);
       return found;
     }
     return null;
-  }, []);
+  }, [roomCandidates]);
+
+  // Fallback: if no stored ending-array found, search for arrays that contain a candidate as last,
+  // or as a middle element (last resort). This preserves existing behavior as a fallback.
+  const findPathFallback = useCallback((data, target) => {
+    if (!data) return null;
+    const candidates = roomCandidates(target);
+
+    // 1) try exact last-element matches already done by findStoredPathEndingAtTarget
+    // 2) fallback: find any array whose last element equals the raw target (already covered)
+    // 3) final fallback: find any array that contains the raw or candidate anywhere (legacy)
+    function searchAnyContaining(node) {
+      if (!node) return null;
+      if (Array.isArray(node)) {
+        for (const el of node) {
+          if (!Array.isArray(el)) {
+            const elStr = String(el).trim();
+            if (candidates.includes(elStr)) {
+              return node.slice();
+            }
+          } else {
+            const recursive = searchAnyContaining(el);
+            if (recursive) return recursive;
+          }
+        }
+      } else if (node && typeof node === 'object') {
+        for (const k of Object.keys(node)) {
+          const r = searchAnyContaining(node[k]);
+          if (r) return r;
+        }
+      }
+      return null;
+    }
+
+    return searchAnyContaining(data);
+  }, [roomCandidates]);
 
   // Trigger search when connections and endId are available.
   useEffect(() => {
@@ -100,24 +152,26 @@ const NodeCanvas = ({
     }
 
     const raw = String(endId);
-    const targets = Array.from(new Set([
-      raw,
-      raw.startsWith('0') ? raw.replace(/^0+/, '') : '0' + raw,
-      raw.padStart(3, '0'),
-    ]));
+    console.log('Searching for target (raw):', raw);
 
-    console.log('Searching for targets:', targets);
-
-    for (const tgt of targets) {
-      const ans = findPath(connections, tgt);
-      if (ans) {
-        console.log('Found path for target', tgt, 'path length', ans.length);
-        break;
-      } else {
-        console.log('No path for target', tgt);
-      }
+    // First prefer stored paths that end exactly at the destination (or its canonical variants)
+    const primary = findStoredPathEndingAtTarget(connections, raw);
+    if (primary) {
+      console.log('Found stored path that ends at target for', raw, 'path length', primary.length);
+      return;
     }
-  }, [endId, connections, findPath]);
+
+    // Fallback: try looser matches
+    const fallback = findPathFallback(connections, raw);
+    if (fallback) {
+      console.log('Fallback found a path containing target (not as last element). Using it temporarily. path length', fallback.length);
+      setPath(fallback);
+      return;
+    }
+
+    console.log('No path found for target', raw);
+    setPath([]);
+  }, [endId, connections, findStoredPathEndingAtTarget, findPathFallback]);
 
   // Draw canvas (robust: attach handlers before src, handle cached images)
   const drawCanvas = useCallback(() => {
@@ -153,34 +207,39 @@ const NodeCanvas = ({
 
       const yOffset = 0;
 
-      // Draw lines
-      ctx.strokeStyle = 'red';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      for (let i = 0; i < path.length - 1; i++) {
-        const startNode = nodes.find(n => String(n.ID) === String(path[i]));
-        const endNode = nodes.find(n => String(n.ID) === String(path[i + 1]));
-        if (!startNode || !endNode) continue;
+      // Build node lookup for fast access
+      const nodeMap = new Map(nodes.map(n => [String(n.ID).trim(), n]));
 
-        const sx = parseFloat(startNode.X);
-        const sy = parseFloat(startNode.Y);
-        const ex = parseFloat(endNode.X);
-        const ey = parseFloat(endNode.Y);
-        if ([sx, sy, ex, ey].some(v => Number.isNaN(v))) continue;
+      // Draw lines only if path is valid
+      if (Array.isArray(path) && path.length > 1) {
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        for (let i = 0; i < path.length - 1; i++) {
+          const startNode = nodeMap.get(String(path[i]).trim());
+          const endNode = nodeMap.get(String(path[i + 1]).trim());
+          if (!startNode || !endNode) continue;
 
-        const mappedStartY = ih - sy - yOffset;
-        const mappedEndY = ih - ey - yOffset;
+          const sx = parseFloat(startNode.X);
+          const sy = parseFloat(startNode.Y);
+          const ex = parseFloat(endNode.X);
+          const ey = parseFloat(endNode.Y);
+          if ([sx, sy, ex, ey].some(v => Number.isNaN(v))) continue;
 
-        ctx.beginPath();
-        ctx.moveTo(sx, mappedStartY);
-        ctx.lineTo(ex, mappedEndY);
-        ctx.stroke();
-        ctx.closePath();
+          const mappedStartY = ih - sy - yOffset;
+          const mappedEndY = ih - ey - yOffset;
+
+          ctx.beginPath();
+          ctx.moveTo(sx, mappedStartY);
+          ctx.lineTo(ex, mappedEndY);
+          ctx.stroke();
+          ctx.closePath();
+        }
       }
 
-      // Draw nodes
+      // Draw nodes for the path (no numeric labels)
       for (const nodeId of path) {
-        const node = nodes.find(n => String(n.ID) === String(nodeId));
+        const node = nodeMap.get(String(nodeId).trim());
         if (!node) continue;
         const nx = parseFloat(node.X);
         const ny = parseFloat(node.Y);
@@ -201,8 +260,8 @@ const NodeCanvas = ({
       console.error('image load error for', backgroundImage, err);
     };
 
-    image.addEventListener('load', handleImageLoad);
-    image.addEventListener('error', handleImageError);
+    image.addEventListener('load', handleImageLoad, { once: true });
+    image.addEventListener('error', handleImageError, { once: true });
 
     image.src = backgroundImage;
 
