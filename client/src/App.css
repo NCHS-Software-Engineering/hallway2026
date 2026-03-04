@@ -35,7 +35,7 @@
 ========================= */
 
 .top-bar {
-  height: 85px;
+  height: 180px;
   background: linear-gradient(
     135deg,
     var(--primary-red-dark),
@@ -49,10 +49,36 @@
   box-shadow: var(--shadow-md);
 }
 
+/* header layout for logo and title */
+.header {
+  display: flex;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  height: 80px;
+  width: auto;
+  padding-left: 20px;
+}
+
 .top-bar h1 {
-  font-size: 22px;
+  font-size: 50px;
   font-weight: 600;
   letter-spacing: 1px;
+  padding-left: 35px;
+}
+
+/* larger text for the label, select and button in the top bar controls */
+.top-bar .controls label,
+.top-bar .controls select,
+.top-bar .controls button {
+  font-size: 36px;
 }
 
 /* =========================

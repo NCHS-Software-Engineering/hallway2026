@@ -9,6 +9,7 @@ import MapComponentf1 from "./MapComponentf1";
 import MapComponentf2 from "./MapComponentf2";
 import MapComponentf3 from "./MapComponentf3";
 import JsonRead from "./Components/JsonRead";
+import NCHSlogo from "./img/NCHSlogo.png";
 
 function App() {
   const [floor, setFloor] = useState(-1);
@@ -50,11 +51,18 @@ function App() {
 
     {/* TOP BAR */}
     <header className="top-bar">
-      <h1>Naperville Central Class Finder</h1>
 
-      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+      <div className="header">
+        <div className="header-left">
+          <img src={NCHSlogo} alt="NCHS Logo" className="logo" />
+          <h1>Naperville Central Class Finder</h1>
+        </div>
+      </div>
+
+
+      <div className="controls" style={{ display: "flex", gap: "30px", alignItems: "center" }}>
         <label htmlFor="rooms-end" style={{ fontWeight: 500 }}>
-          Where is...
+          Route to:
         </label>
 
         <Select
