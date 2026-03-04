@@ -226,7 +226,7 @@ const NodeCanvas = ({
       // Draw lines only if path is valid
       if (Array.isArray(path) && path.length > 1) {
         ctx.strokeStyle = 'red';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 7;
         ctx.lineCap = 'round';
         for (let i = 0; i < path.length - 1; i++) {
           const startNode = nodeMap.get(String(path[i]).trim());
