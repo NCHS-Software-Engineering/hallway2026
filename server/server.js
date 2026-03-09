@@ -23,18 +23,23 @@ server.listen(port, () => {
 
 const readline = require('readline');
 
-// Create a readline interface
+// Create a readline interface and keep the last scanned value
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
+let lastBarcode = null;
+rl.on('line', (input) => {
+    console.log(`Scanned barcode: ${input}`);
+    lastBarcode = input;
+});
 
 app.get("/barcode", (req, res) => {
-    console.log('Barcode scanner ready. Scan a barcode...');
-
-    // Listen for input
-    rl.on('line', (input) => {
-        console.log(`Scanned barcode: ${input}`);
-        res.json({barcode: input});
-    });
+    // return the most recent barcode (or 204 No Content if none yet)
+    if (lastBarcode !== null) {
+        res.json({ barcode: lastBarcode });
+        lastBarcode = null; // clear after reading if desired
+    } else {
+        res.status(204).end();
+    }
 });
