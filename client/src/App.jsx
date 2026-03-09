@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import IconButton from '@mui/material/IconButton';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import Select from "./Components/Select";
 import MapComponentb from "./MapComponentb";
 import MapComponentf1 from "./MapComponentf1";
 import MapComponentf2 from "./MapComponentf2";
@@ -15,9 +14,75 @@ function App() {
   const [floor, setFloor] = useState(-1);
   const [room, setRoom] = useState("");
   const [route, setRoute] = useState(null);
+  const timeoutRef = useRef(null);
+  const warningTimeoutRef = useRef(null);
+  const [showWarning, setShowWarning] = useState(false);
+
+  useEffect(() => {
+    // When a route is active, start both the warning and the reset timers
+    if (route !== null && route !== '') {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+
+      // Show warning when 10 seconds remain (after 20s)
+      warningTimeoutRef.current = setTimeout(() => {
+        setShowWarning(true);
+      }, 30000);
+
+      // Reset after 30s
+      timeoutRef.current = setTimeout(() => {
+        setRoom('');
+        setRoute(null);
+        setShowWarning(false);
+      }, 40000);
+    } else {
+      // Clear timers and hide warning when no route
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (warningTimeoutRef.current) {
+        clearTimeout(warningTimeoutRef.current);
+        warningTimeoutRef.current = null;
+      }
+      setShowWarning(false);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (warningTimeoutRef.current) {
+        clearTimeout(warningTimeoutRef.current);
+        warningTimeoutRef.current = null;
+      }
+    };
+  }, [route]);
+
+  const handleImStillHere = () => {
+    // Hide warning and restart both timers
+    setShowWarning(false);
+    if (warningTimeoutRef.current) {
+      clearTimeout(warningTimeoutRef.current);
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    warningTimeoutRef.current = setTimeout(() => {
+      setShowWarning(true);
+    }, 30000);
+
+    timeoutRef.current = setTimeout(() => {
+      setRoom('');
+      setRoute(null);
+      setShowWarning(false);
+    }, 40000);
+  };
 
   let RenderedComponent;
-  if (route === null)
+  if (route === null || route === '')
   {
     // show first floor map with only the start node (ID 0) highlighted
     RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId="0" />;
@@ -43,11 +108,51 @@ function App() {
   const handleSelectChange = (e) => {
     const selectedRoom = e.target.value;
     setRoom(selectedRoom);
-    setRoute(null);
+    setRoute(selectedRoom);
     console.log('Selected Room:', selectedRoom);
   };
 
   return (
+    <>
+      <div className="App">
+        <header>
+          <p>Naperville Central Class Finder</p>
+        </header>
+
+        <ul>
+          <li>
+            
+
+
+            <input
+              id="rooms-end"
+              type="text"
+              value={room}
+              onChange={handleSelectChange}
+              placeholder="Enter Room Number"
+              style={{ fontSize: '1.2rem', padding: '8px 10px', width: '320px' }}
+            />
+          </li>
+          {RenderedComponent}
+          {showWarning && (
+            <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(39, 0, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ background: '#f73e1e', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center' }}>
+                <p style={{ fontSize: '1.1rem', marginBottom: '12px' }}>Are you still here? Your session will expire soon.</p>
+                <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px' }}>I'm still here</button>
+              </div>
+            </div>
+          )}
+        </ul>
+
+        <div id="aside">
+          <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025.</p>
+          <h4>Contributors</h4>
+          <hr />
+          <p>Shawn Plackiyil '25.</p>
+          <p>Daniel Kozlowski '26.</p>
+          <p>Yutian Wang '26.</p>
+          <p>Fionn McCabe-Wild '26.</p>
+          <hr />
   <div className="app-container">
 
     {/* TOP BAR */}
