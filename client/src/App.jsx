@@ -8,10 +8,11 @@ import MapComponentf1 from "./MapComponentf1";
 import MapComponentf2 from "./MapComponentf2";
 import MapComponentf3 from "./MapComponentf3";
 import JsonRead from "./Components/JsonRead";
+import NCHSlogo from "./img/NCHSlogo.png";
 
 function App() {
   const [floor, setFloor] = useState(-1);
-  const [room, setRoom] = useState('');
+  const [room, setRoom] = useState("");
   const [route, setRoute] = useState(null);
   const timeoutRef = useRef(null);
   const warningTimeoutRef = useRef(null);
@@ -83,7 +84,8 @@ function App() {
   let RenderedComponent;
   if (route === null || route === '')
   {
-
+    // show first floor map with only the start node (ID 0) highlighted
+    RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId="0" />;
   }
   else if (route.length === 2){
     RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={room}/>;
@@ -151,10 +153,67 @@ function App() {
           <p>Yutian Wang '26.</p>
           <p>Fionn McCabe-Wild '26.</p>
           <hr />
+  <div className="app-container">
+
+    {/* TOP BAR */}
+    <header className="top-bar">
+
+      <div className="header">
+        <div className="header-left">
+          <img src={NCHSlogo} alt="NCHS Logo" className="logo" />
+          <h1>Naperville Central Class Finder</h1>
         </div>
       </div>
-    </>
-  );
-}
 
+
+      <div className="route-block">
+  <label htmlFor="rooms-end" style={{ fontWeight: 500 }}>
+    Route to:
+  </label>
+
+  <Select
+    idStr="rooms-end"
+    value={room}
+    onChange={handleSelectChange}
+  />
+
+  <button onClick={() => setRoute(room)}>
+    Route
+  </button>
+</div>
+    </header>
+
+    {/* MAIN LAYOUT */}
+    <div className="main-layout">
+
+      {/* LEFT PANEL */}
+      <aside className="left-panel">
+        <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
+        <h3>Contributors</h3>
+        <hr />
+        <p>Shawn Plackiyil '25</p>
+        <p>Daniel Kozlowski '26</p>
+        <p>Yutian Wang '26</p>
+        <p>Fionn McCabe-Wild '26</p>
+      </aside>
+
+      {/* MAP SECTION */}
+      <main className="map-section">
+
+        <div className="map-card">
+          {RenderedComponent}
+        </div>
+
+        <div className="floor-label">
+          FIRST FLOOR
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+);
+}
 export default App;
+

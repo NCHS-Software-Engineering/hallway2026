@@ -82,7 +82,9 @@ const Select = (props) => {
             <optgroup disabled key={"/-" + floors[i][0]} label={"End of " + floors[i].toLowerCase() + " rooms."}></optgroup>
             ]);
         }
-        setOptions(groups);
+        // insert placeholder as first option so dropdown shows #### when no room selected
+        const placeholder = <option key="placeholder" value="" disabled hidden>####</option>;
+        setOptions([placeholder, ...groups]);
     }, []);
 
     const onChange = (e) => {
@@ -100,7 +102,7 @@ const Select = (props) => {
 
     return (
         <>
-            <select id={props.idStr} onChange={onChange} style={{backgroundColor: bg}}>
+            <select id={props.idStr} value={props.value} onChange={onChange} style={{backgroundColor: bg}}>
                 {options}
             </select><style>{`label[for=${props.idStr}]::after {background-color: ${bg}}`}</style>
         </>
