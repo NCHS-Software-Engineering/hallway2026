@@ -113,107 +113,72 @@ function App() {
   };
 
   return (
-    <>
-      <div className="App">
-        <header>
-          <p>Naperville Central Class Finder</p>
-        </header>
-
-        <ul>
-          <li>
-            
-
-
-            <input
-              id="rooms-end"
-              type="text"
-              value={room}
-              onChange={handleSelectChange}
-              placeholder="Enter Room Number"
-              style={{ fontSize: '1.2rem', padding: '8px 10px', width: '320px' }}
-            />
-          </li>
-          {RenderedComponent}
-          {showWarning && (
-            <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(39, 0, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ background: '#f73e1e', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center' }}>
-                <p style={{ fontSize: '1.1rem', marginBottom: '12px' }}>Are you still here? Your session will expire soon.</p>
-                <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px' }}>I'm still here</button>
-              </div>
-            </div>
-          )}
-        </ul>
-
-        <div id="aside">
-          <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025.</p>
-          <h4>Contributors</h4>
-          <hr />
-          <p>Shawn Plackiyil '25.</p>
-          <p>Daniel Kozlowski '26.</p>
-          <p>Yutian Wang '26.</p>
-          <p>Fionn McCabe-Wild '26.</p>
-          <hr />
-  <div className="app-container">
-
-    {/* TOP BAR */}
-    <header className="top-bar">
-
-      <div className="header">
-        <div className="header-left">
-          <img src={NCHSlogo} alt="NCHS Logo" className="logo" />
-          <h1>Naperville Central Class Finder</h1>
+    <div className="app-container">
+      {/* TOP BAR */}
+      <header className="top-bar">
+        <div className="header">
+          <div className="header-left">
+            <img src={NCHSlogo} alt="NCHS Logo" className="logo" />
+            <h1>Naperville Central Class Finder</h1>
+          </div>
         </div>
+
+        <div className="route-block">
+          <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
+            Route to:
+          </label>
+          <input
+            id="rooms-end"
+            type="text"
+            value={room}
+            onChange={handleSelectChange}
+            placeholder= "Room #"
+            style={{ fontSize: '1.6rem', padding: '8px 10px', width: '200px', color: 'black', textAlign: 'center' }}
+          />
+          <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
+            Route
+          </button>
+        </div>
+      </header>
+
+      {/* MAIN LAYOUT */}
+      <div className="main-layout">
+        {/* LEFT PANEL */}
+        <aside className="left-panel">
+          <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
+          <h3>Contributors</h3>
+          <hr />
+          <p>Shawn Plackiyil '25</p>
+          <p>Daniel Kozlowski '26</p>
+          <p>Yutian Wang '26</p>
+          <p>Fionn McCabe-Wild '26</p>
+        </aside>
+
+        {/* MAP SECTION */}
+        <main className="map-section">
+          <div className="map-card">
+            {RenderedComponent}
+          </div>
+
+          <div className="floor-label">
+            FIRST FLOOR
+          </div>
+        </main>
       </div>
 
-
-      <div className="route-block">
-  <label htmlFor="rooms-end" style={{ fontWeight: 500 }}>
-    Route to:
-  </label>
-
-  <Select
-    idStr="rooms-end"
-    value={room}
-    onChange={handleSelectChange}
-  />
-
-  <button onClick={() => setRoute(room)}>
-    Route
-  </button>
-</div>
-    </header>
-
-    {/* MAIN LAYOUT */}
-    <div className="main-layout">
-
-      {/* LEFT PANEL */}
-      <aside className="left-panel">
-        <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
-        <h3>Contributors</h3>
-        <hr />
-        <p>Shawn Plackiyil '25</p>
-        <p>Daniel Kozlowski '26</p>
-        <p>Yutian Wang '26</p>
-        <p>Fionn McCabe-Wild '26</p>
-      </aside>
-
-      {/* MAP SECTION */}
-      <main className="map-section">
-
-        <div className="map-card">
-          {RenderedComponent}
+      {/* WARNING MODAL */}
+      {showWarning && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(39, 0, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#f73e1e', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center' }}>
+            <p style={{ fontSize: '1.1rem', marginBottom: '12px' }}>Are you still here? Your session will expire soon.</p>
+            <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px' }}>I'm still here</button>
+          </div>
         </div>
-
-        <div className="floor-label">
-          FIRST FLOOR
-        </div>
-
-      </main>
-
+      )}
     </div>
-
-  </div>
-);
+  );
 }
+
 export default App;
+
 
