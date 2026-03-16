@@ -243,10 +243,55 @@ svg {
   color: var(--text-light);
 }
 
+/* INACTIVITY TIMER BLOCK with opposite polygon slant */
+.timer-block {
+  position: relative;        /* for pseudo-element stacking */
+  display: inline-flex;      /* shrink to content width */
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 40px 10px 15px; /* Top, Right, Bottom, Left - reversed padding */
+  border-radius: var(--radius);
+  overflow: visible;         /* allow pseudo-element to show outside edges */
+}
+
+/* pseudo-element for slanted background - opposite slant from route-block */
+.timer-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;                /* behind content */
+  background: #ffa500;       /* orange for warning/countdown */
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);  /* "/" angle - bottom-right pulled left */
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+
+/* make the timer content appear above the slanted background */
+.timer-block > * {
+  position: relative;
+  z-index: 1;
+  color: var(--text-light);
+  font-size: 36px;
+  font-weight: 600;
+}
+
+/* container for top-bar controls - adds gap between timer and route blocks */
+.top-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;  /* small gap between timer and route blocks */
+}
+
 /* responsive tweak: stack vertically on small screens */
 @media (max-width: 700px) {
   .route-block {
     flex-direction: column;
     align-items: stretch;
+  }
+  
+  .top-bar-controls {
+    flex-direction: column;
+    gap: 10px;
   }
 }

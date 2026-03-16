@@ -123,21 +123,26 @@ function App() {
           </div>
         </div>
 
-        <div className="route-block">
-          <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
-            Route to:
-          </label>
-          <input
-            id="rooms-end"
-            type="text"
-            value={room}
-            onChange={handleSelectChange}
-            placeholder= "Room #"
-            style={{ fontSize: '1.6rem', padding: '8px 10px', width: '200px', color: 'black', textAlign: 'center' }}
-          />
-          <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
-            Route
-          </button>
+        <div className="top-bar-controls">
+          <div className="timer-block">
+            <span>Resetting in: 5:00</span>
+          </div>
+          <div className="route-block">
+            <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
+              Route to:
+            </label>
+            <input
+              id="rooms-end"
+              type="text"
+              value={room}
+              onChange={handleSelectChange}
+              placeholder= "Room #"
+              style={{ fontSize: '1.6rem', padding: '8px 10px', width: '200px', color: 'black', textAlign: 'center' }}
+            />
+            <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
+              Route
+            </button>
+          </div>
         </div>
       </header>
 
