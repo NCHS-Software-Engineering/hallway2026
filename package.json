@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "react-qr-code": "^2.0.18",
     "react-zoom-pan-pinch": "^3.7.0"
+  },
+  "devDependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "scripts": {
+    "make-qr-root": "node tools/make_image_qr.js"
   }
 }
