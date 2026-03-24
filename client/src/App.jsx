@@ -107,7 +107,7 @@ function App() {
   };
 
   // 2. HARDCODED LIVE URL: This guarantees the QR code points to the real AWS server
-  const currentUrl = `http://nav.redhawaks.us/?room=${room}`;
+  const currentUrl = `http://nav.redhawks.us/?room=${room}`;
 
   return (
     <div className="app-container">
