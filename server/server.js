@@ -9,13 +9,22 @@ const port = process.env.Port || 8080;
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', 
-        'http://localhost:3000'
+        'http://localhost:3000',
+        'https://nav.redhawks.us'
     );
     next();
 });
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, "../client/build")));
+const buildPath = path.join(__dirname, "hallway2026", "client", "build");
+app.use(express.static(buildPath));
+app.get("*", (req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"), (err) => {
+        if (err) {
+            res.status(500).send("Build folder or index.html missing at: " + buildPath);
+        }
+    });
+});
 
 server.listen(port, () => {
     console.log(`The server is listening on port ${port}`);
