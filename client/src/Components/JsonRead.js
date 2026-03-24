@@ -10,6 +10,7 @@ const NodeCanvas = ({
   const [nodes, setNodes] = useState([]);
   const [connections, setConnections] = useState([]);
   const [path, setPath] = useState([]);
+  const [specialLocations, setSpecialLocations] = useState([]);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [stairsIcon, setStairsIcon] = useState(null);
@@ -24,6 +25,22 @@ const NodeCanvas = ({
       setStairsIcon(img);
     };
     img.onerror = () => console.error('Failed to load stairs_icon.png');
+  }, []);
+
+  // Load important waypoint definitions (nurse office database for now)
+  useEffect(() => {
+    fetch('/specialLocations.json')
+      .then((res) => {
+        if (!res.ok) throw new Error('Special locations fetch failed');
+        return res.json();
+      })
+      .then((json) => {
+        setSpecialLocations((json && Array.isArray(json.specialLocations)) ? json.specialLocations : []);
+      })
+      .catch((err) => {
+        console.error('Error loading specialLocations.json:', err);
+        setSpecialLocations([]);
+      });
   }, []);
 
   // Load connections and node coordinates
@@ -280,6 +297,55 @@ const NodeCanvas = ({
         // Draw stairs icon if node type is "St" and icon is loaded
         if (node.Type === 'St' && stairsIcon) {
           ctx.drawImage(stairsIcon, nx - 24, mappedY - 22, 50, 50);
+        }
+      }
+
+      // Draw special waypoint markers (nurse office, etc.)
+      if (specialLocations.length > 0) {
+        const specialByNodeId = new Map();
+        specialLocations.forEach((s) => {
+          const nodeIds = Array.isArray(s.nodeIds) ? s.nodeIds : (s.id ? [s.id] : []);
+          nodeIds.forEach((nodeId) => {
+            const key = String(nodeId).trim();
+            if (!specialByNodeId.has(key)) specialByNodeId.set(key, []);
+            specialByNodeId.get(key).push(s);
+          });
+        });
+
+        const drawnSpecialIds = new Set();
+
+        for (const nodeId of path) {
+          const key = String(nodeId).trim();
+          const specials = specialByNodeId.get(key);
+          if (!specials) continue;
+
+          const node = nodeMap.get(key);
+          if (!node) continue;
+
+          const nx = parseFloat(node.X);
+          const ny = parseFloat(node.Y);
+          if (Number.isNaN(nx) || Number.isNaN(ny)) continue;
+
+          const mappedY = ih - ny - yOffset;
+
+          specials.forEach((special) => {
+            const specialUniqueId = special.id || `${special.name}-${key}`;
+            if (drawnSpecialIds.has(specialUniqueId)) return;
+            drawnSpecialIds.add(specialUniqueId);
+
+            ctx.beginPath();
+            ctx.arc(nx, mappedY, 14, 0, Math.PI * 2);
+            ctx.fillStyle = /**special.color || */ '#ff0000';
+            ctx.fill();
+            ctx.strokeStyle = special.borderColor || '#000000';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.font = 'bold 25px Arial';
+            ctx.fillStyle = '#ff0000';
+            ctx.fillText(special.name || 'Waypoint', nx + 16, mappedY - 10);
+          });
         }
       }
     };

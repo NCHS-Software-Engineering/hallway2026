@@ -1,0 +1,12 @@
+{
+  "specialLocations": [
+    {
+      "id": "nurse-office",
+      "nodeIds": ["058", "059", "NSE","155","166","170","168"],
+      "name": "Nurse Office",
+      "type": "NSE",
+      "color": "#ff9900",
+      "borderColor": "#000000"
+    }
+  ]
+}
