@@ -12,19 +12,7 @@ const NodeCanvas = ({
   const [path, setPath] = useState([]);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
-  const [stairsIcon, setStairsIcon] = useState(null);
   const canvasRef = useRef(null);
-
-  // Load stairs icon once
-  useEffect(() => {
-    const img = new Image();
-    img.src = '/stairs_icon.png';
-    img.onload = () => {
-      console.log('Stairs icon loaded successfully');
-      setStairsIcon(img);
-    };
-    img.onerror = () => console.error('Failed to load stairs_icon.png');
-  }, []);
 
   // Load connections and node coordinates
   useEffect(() => {
@@ -51,7 +39,6 @@ const NodeCanvas = ({
       complete: (result) => {
         const parsedNodes = result.data.map((row) => ({
           ID: row.ID,
-          Type: row.Type,
           X: parseFloat(row.X),
           Y: parseFloat(row.Y),
         }));
@@ -66,25 +53,19 @@ const NodeCanvas = ({
   }, [src, csvSrc]);
 
   // Helper: generate candidate tokens for a requested room ID.
-  // This ensures "33" can match "033" or "0033" if your data uses leading-zero room tokens.
   const roomCandidates = useCallback((raw) => {
     const s = String(raw).trim();
     const set = new Set();
     set.add(s);
-    // strip leading zeros and re-add canonical forms
     const stripped = s.replace(/^0+/, '') || '0';
     set.add(stripped);
-    // prefixed single zero (common room token format)
     if (!s.startsWith('0')) set.add('0' + s);
-    // pad to 3 digits (if IDs use 3 digits)
     set.add(stripped.padStart(3, '0'));
-    // prefixed zero + padded
     set.add('0' + stripped.padStart(3, '0'));
     return Array.from(set);
   }, []);
 
   // Find a stored path that terminates at target (preferred).
-  // This avoids selecting arrays where the target appears in the middle.
   const findStoredPathEndingAtTarget = useCallback((data, target) => {
     if (!data) return null;
     const candidates = roomCandidates(target);
@@ -98,7 +79,6 @@ const NodeCanvas = ({
           found = node.slice();
           return true;
         }
-        // Recurse into nested arrays
         for (const child of node) {
           if (Array.isArray(child) && walk(child)) return true;
         }
@@ -118,15 +98,11 @@ const NodeCanvas = ({
     return null;
   }, [roomCandidates]);
 
-  // Fallback: if no stored ending-array found, search for arrays that contain a candidate as last,
-  // or as a middle element (last resort). This preserves existing behavior as a fallback.
+  // Fallback search
   const findPathFallback = useCallback((data, target) => {
     if (!data) return null;
     const candidates = roomCandidates(target);
 
-    // 1) try exact last-element matches already done by findStoredPathEndingAtTarget
-    // 2) fallback: find any array whose last element equals the raw target (already covered)
-    // 3) final fallback: find any array that contains the raw or candidate anywhere (legacy)
     function searchAnyContaining(node) {
       if (!node) return null;
       if (Array.isArray(node)) {
@@ -155,12 +131,6 @@ const NodeCanvas = ({
 
   // Trigger search when connections and endId are available.
   useEffect(() => {
-    if (endId === "0" || endId === 0) {
-      // special-case start node: only highlight itself, no lines
-      setPath(["0"]);
-      return;
-    }
-
     if (!endId) {
       console.log('No endId set yet.');
       return;
@@ -173,14 +143,12 @@ const NodeCanvas = ({
     const raw = String(endId);
     console.log('Searching for target (raw):', raw);
 
-    // First prefer stored paths that end exactly at the destination (or its canonical variants)
     const primary = findStoredPathEndingAtTarget(connections, raw);
     if (primary) {
       console.log('Found stored path that ends at target for', raw, 'path length', primary.length);
       return;
     }
 
-    // Fallback: try looser matches
     const fallback = findPathFallback(connections, raw);
     if (fallback) {
       console.log('Fallback found a path containing target (not as last element). Using it temporarily. path length', fallback.length);
@@ -192,7 +160,7 @@ const NodeCanvas = ({
     setPath([]);
   }, [endId, connections, findStoredPathEndingAtTarget, findPathFallback]);
 
-  // Draw canvas (robust: attach handlers before src, handle cached images)
+  // Draw canvas
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -203,8 +171,6 @@ const NodeCanvas = ({
     console.log('drawCanvas start, backgroundImage =', backgroundImage);
 
     const handleImageLoad = () => {
-      console.log('image loaded handler ->', { src: image.src, width: image.width, height: image.height });
-
       const iw = image.width || 800;
       const ih = image.height || 600;
       const dpr = window.devicePixelRatio || 1;
@@ -221,18 +187,13 @@ const NodeCanvas = ({
       ctx.clearRect(0, 0, iw, ih);
       ctx.drawImage(image, 0, 0, iw, ih);
 
-      console.log('After drawImage: canvas attr size', canvas.width, canvas.height, 'CSS', window.getComputedStyle(canvas).width, window.getComputedStyle(canvas).height);
-      console.log('Path length:', Array.isArray(path) ? path.length : path, 'Nodes:', Array.isArray(nodes) ? nodes.length : nodes);
-
       const yOffset = 0;
-
-      // Build node lookup for fast access
       const nodeMap = new Map(nodes.map(n => [String(n.ID).trim(), n]));
 
-      // Draw lines only if path is valid
+      // Draw lines
       if (Array.isArray(path) && path.length > 1) {
         ctx.strokeStyle = 'red';
-        ctx.lineWidth = 7;
+        ctx.lineWidth = 4;
         ctx.lineCap = 'round';
         for (let i = 0; i < path.length - 1; i++) {
           const startNode = nodeMap.get(String(path[i]).trim());
@@ -264,23 +225,14 @@ const NodeCanvas = ({
         const ny = parseFloat(node.Y);
         if (Number.isNaN(nx) || Number.isNaN(ny)) continue;
         const mappedY = ih - ny - yOffset;
-        
-        // Only draw green circle at node #0 (first node)
-        if (String(nodeId) === '0') {
-          ctx.beginPath();
-          ctx.arc(nx, mappedY, 12, 0, Math.PI * 2);
-          ctx.fillStyle = 'green';
-          ctx.fill();
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = 4;
-          ctx.stroke();
-          ctx.closePath();
-        }
-        
-        // Draw stairs icon if node type is "St" and icon is loaded
-        if (node.Type === 'St' && stairsIcon) {
-          ctx.drawImage(stairsIcon, nx - 24, mappedY - 22, 50, 50);
-        }
+        ctx.beginPath();
+        ctx.arc(nx, mappedY, 8, 0, Math.PI * 2);
+        ctx.fillStyle = 'blue';
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.closePath();
       }
     };
 
@@ -296,26 +248,27 @@ const NodeCanvas = ({
     if (image.complete) {
       setTimeout(() => {
         if (image.width && image.height) {
-          console.log('image.complete detected, calling handler manually');
           handleImageLoad();
         } else {
           image.addEventListener('load', handleImageLoad, { once: true });
         }
       }, 0);
     }
-  }, [backgroundImage, path, nodes, stairsIcon]);
+  }, [backgroundImage, path, nodes]);
 
   // Call drawCanvas when both path and nodes are ready
   useEffect(() => {
-    console.log('Trigger draw check: path length=', path.length, 'nodes=', nodes.length);
     if (path.length > 0 && nodes.length > 0) {
       drawCanvas();
     }
   }, [nodes, path, backgroundImage, drawCanvas]);
 
   return (
-  <canvas ref={canvasRef} />
-);
+    <div style={{ position: 'relative' }}>
+      <h1>Node Network to End Node {endId}</h1>
+      <canvas ref={canvasRef} style={{ border: '1px solid black' }} />
+    </div>
+  );
 };
 
 export default NodeCanvas;
