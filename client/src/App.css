@@ -35,16 +35,19 @@
 ========================= */
 
 .top-bar {
-  height: 180px;
+  min-height: 120px;
+  height: auto;
   background: linear-gradient(
     135deg,
     var(--primary-red-dark),
     var(--primary-red-light)
   );
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  gap: 12px;
+  padding: 15px 20px;
   color: var(--text-light);
   box-shadow: var(--shadow-md);
 }
@@ -53,7 +56,9 @@
 .header {
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
 }
+
 
 .header-left {
   display: flex;
@@ -62,16 +67,17 @@
 }
 
 .logo {
-  height: 80px;
+  height: 70px;
   width: auto;
-  padding-left: 20px;
+  padding-left: 12px;
 }
 
 .top-bar h1 {
-  font-size: 50px;
+  font-size: clamp(1.25rem, 3vw, 2.2rem);
   font-weight: 600; /* make title bold */
   letter-spacing: 1px;
-  padding-left: 40px;
+  padding-left: 20px;
+  margin: 0;
 }
 
 /* larger text for the label, select and button in the top bar route section */
@@ -110,6 +116,7 @@
 .main-layout {
   flex: 1;
   display: flex;
+  gap: 20px;
 }
 
 /* =========================
@@ -117,14 +124,16 @@
 ========================= */
 
 .left-panel {
-  width: 240px;
+  flex: 0 0 260px;
+  min-width: 230px;
+  max-width: 320px;
   background: linear-gradient(
     180deg,
     var(--panel-dark),
     var(--panel-dark-2)
   );
   color: var(--text-light);
-  padding: 20px;
+  padding: 16px;
   box-shadow: inset -1px 0 0 rgba(255,255,255,0.05);
 }
 
@@ -137,17 +146,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 20px;
+  padding: 20px;
+  min-width: 0;
 }
 
 /* Map Card (Hero Element) */
 
 .map-card {
+  width: 100%;
+  max-width: 1200px;
   background: var(--card-bg);
-  padding: 30px;
+  padding: 18px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   transition: transform 0.2s ease;
+  overflow: hidden;
 }
 
 .map-card:hover {
@@ -159,11 +172,11 @@
 ========================= */
 
 .floor-label {
-  margin-top: 20px;
+  margin-top: 16px;
   font-weight: 600;
   letter-spacing: 2px;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: clamp(0.75rem, 1.4vw, 1rem);
 }
 
 /* =========================
@@ -199,7 +212,17 @@ input, select {
   border: none;
   outline: none;
   font-size: 14px;
+  width: 100%;
+  max-width: 260px;
+  box-sizing: border-box;
 }
+
+input[type='text'], .room-input {
+  width: 100%;
+  max-width: 320px;
+}
+
+
 
 /* =========================
    MAP SVG (if needed)
@@ -209,6 +232,13 @@ svg {
   max-width: 100%;
   height: auto;
 }
+
+canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 
 /* =========================
    ROUTE BLOCK WITH SLANTED LEFT EDGE - background of the [  "Route to: ####" ROUTE  ]
@@ -244,9 +274,62 @@ svg {
 }
 
 /* responsive tweak: stack vertically on small screens */
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    width: 100%;
+    max-width: none;
+    flex: 1 1 auto;
+    box-shadow: none;
+  }
+
+  .map-section {
+    padding: 16px;
+  }
+
+  .top-bar {
+    justify-content: center;
+    text-align: center;
+  }
+
   .route-block {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .top-bar .route-block label,
+  .top-bar .route-block select,
+  .top-bar .route-block button,
+  .top-bar .route-block input {
+    font-size: 1.1rem;
+  }
+
+  .logo {
+    height: 60px;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-bar {
+    padding: 12px;
+  }
+  .header-left {
+    flex-direction: column;
+    align-items: center;
+  }
+  .top-bar h1 {
+    font-size: 1.4rem;
+    padding-left: 0;
+  }
+  .route-block {
+    padding: 10px;
+  }
+  .map-card {
+    padding: 14px;
   }
 }
