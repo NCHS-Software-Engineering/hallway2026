@@ -146,7 +146,9 @@ def fix_p1(filepath):
 
         # ── Fix 2c: malformed '082B' line (missing comma after type) ─────
         # Raw CSV line: "082B,C585.9,942.2,1,126"
-        # row[1] == 'C585.9'  →  split into type='C', x='585.9'
+        # The type ('C') and x-coordinate ('585.9') were run together without
+        # a separating comma, so row[1] == 'C585.9'.  The guard length > 1
+        # ensures there is actually an x-coordinate after the 'C' to split off.
         if node_id == "082B":
             if len(row) > 1 and row[1].strip().startswith("C") and len(row[1].strip()) > 1:
                 type_x = row[1].strip()
@@ -182,8 +184,17 @@ def fix_p1(filepath):
             row = _replace_conn(row, "81E-H", "081E-H")
 
         # ── Fix 10: node 142 '3' → '144' ─────────────────────────────────
+        # Original CSV fields: count=3, then '3','124','071','144'
+        # The connection count is 3 but four IDs were written; only the first
+        # three are used.  We replace the erroneous first entry ('3' → '144')
+        # and trim the row to exactly (5 + count) fields to remove the stale
+        # trailing '144' that was already in position 8.
         if node_id == "142":
             row = _replace_conn(row, "3", "144")
+            try:
+                row = row[: 5 + int(row[4])]   # trim stale trailing field
+            except (ValueError, IndexError):
+                pass
 
         # ── Fix 11: node 102 self-reference ──────────────────────────────
         if node_id == "102":
