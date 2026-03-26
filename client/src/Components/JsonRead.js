@@ -175,8 +175,9 @@ const NodeCanvas = ({
       const ih = image.height || 600;
       const dpr = window.devicePixelRatio || 1;
 
-      canvas.style.width = `${iw}px`;
-      canvas.style.height = `${ih}px`;
+      // Let CSS scale the canvas by width while keeping coordinate system in native pixels
+      canvas.style.width = '100%';
+      canvas.style.height = 'auto';
       canvas.width = Math.round(iw * dpr);
       canvas.height = Math.round(ih * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

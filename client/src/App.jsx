@@ -129,8 +129,9 @@ function App() {
             type="text"
             value={room}
             onChange={handleSelectChange}
-            placeholder= "Room #"
-            style={{ fontSize: '1.6rem', padding: '8px 10px', width: '200px', color: 'black', textAlign: 'center' }}
+            placeholder="Room #"
+            className="room-input"
+            style={{ fontSize: '1.4rem', padding: '8px 10px', color: 'black', textAlign: 'center' }}
           />
           <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
             Route
