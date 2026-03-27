@@ -5,8 +5,5 @@
   },
   "devDependencies": {
     "qrcode": "^1.5.4"
-  },
-  "scripts": {
-    "make-qr-root": "node tools/make_image_qr.js"
   }
 }

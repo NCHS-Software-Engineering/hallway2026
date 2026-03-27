@@ -21,12 +21,10 @@
     "web-vitals": "^4.2.4"
   },
   "scripts": {
-    "prestart": "node ../tools/make_image_qr.js --repo=NCHS-Software-Engineering/hallway2026 --branch=main --path=client/public/firstFloor2.png --out=public/qr.png --format=png",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "make-qr": "node ../tools/make_image_qr.js --repo=NCHS-Software-Engineering/hallway2026 --branch=main --path=client/public/firstFloor2.png --out=public/qr.png --format=png"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
