@@ -342,9 +342,34 @@ const NodeCanvas = ({
             ctx.stroke();
             ctx.closePath();
 
+            const labelText = special.name || 'Waypoint';
+            const labelX = nx + 26;
+            const labelY = mappedY - 15;
+            const labelPaddingX = 10;
+            const labelPaddingY = 6;
+
             ctx.font = 'bold 25px Arial';
+            const labelWidth = ctx.measureText(labelText).width;
+
+            ctx.fillStyle = '#aaaaaa';
+            ctx.fillRect(
+              labelX - labelPaddingX,
+              labelY - 25 - labelPaddingY,
+              labelWidth + labelPaddingX * 2,
+              -10 + labelPaddingY * 2
+            );
+
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(
+              labelX - labelPaddingX,
+              labelY - 25 - labelPaddingY,
+              labelWidth + labelPaddingX * 2,
+              25 + labelPaddingY * 2
+            );
+
             ctx.fillStyle = '#ff0000';
-            ctx.fillText(special.name || 'Waypoint', nx + 16, mappedY - 10);
+            ctx.fillText(labelText, labelX, labelY);
           });
         }
       }
