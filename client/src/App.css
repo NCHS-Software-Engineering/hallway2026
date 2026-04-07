@@ -219,8 +219,8 @@ svg {
   display: inline-flex;      /* shrink to content width */
   align-items: center;
   gap: 10px;
-  padding: 10px 15px 10px 40px; /* Top, Right, Bottom, Left  */
-  border-radius: var(--radius);
+  padding: 15px 40px 15px 40px; /* Top, Right, Bottom, Left  */
+  border-radius: 0;
   overflow: visible;         /* allow pseudo-element to show outside edges */
 }
 
@@ -231,8 +231,8 @@ svg {
   inset: 0;
   z-index: 0;                /* behind content */
   background: #ffffff;
-  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);  /* slanted left edge */
-  border-radius: var(--radius);
+  clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%);  /* slant on left side  (15% 0, 100% 0, 100% 100%, 0 100%); */
+  border-radius: 0 14px 14px 0;  /* curve only right end (far end) */
   box-shadow: var(--shadow-md);
 }
 
@@ -243,6 +243,27 @@ svg {
   color: var(--text-light);
 }
 
+/* Style the button within route-block */
+.route-block button {
+  background: var(--primary-red);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-weight: 600;
+}
+
+.route-block button:hover {
+  background: var(--primary-red-light);
+}
+
+.route-block button:active {
+  transform: scale(0.97);
+}
+
 /* INACTIVITY TIMER BLOCK with opposite polygon slant */
 .timer-block {
   position: relative;        /* for pseudo-element stacking */
@@ -250,8 +271,8 @@ svg {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 10px 40px 10px 15px; /* Top, Right, Bottom, Left - reversed padding */
-  border-radius: var(--radius);
+  padding: 15px 40px 15px 40px; /* Top, Right, Bottom, Left - reversed padding */
+  border-radius: 0;
   overflow: visible;         /* allow pseudo-element to show outside edges */
 }
 
@@ -261,9 +282,9 @@ svg {
   position: absolute;
   inset: 0;
   z-index: 0;                /* behind content */
-  background: #ffa500;       /* orange for warning/countdown */
-  clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);  /* "/" angle - bottom-right pulled left */
-  border-radius: var(--radius);
+  background: #ffffff;       /* white background */
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);  /* slant on right side */
+  border-radius: 14px 0 0 14px;  /* curve only left end (far end) */
   box-shadow: var(--shadow-md);
 }
 
@@ -271,7 +292,7 @@ svg {
 .timer-block > * {
   position: relative;
   z-index: 1;
-  color: var(--text-light);
+  color: #000000;
   font-size: 36px;
   font-weight: 600;
 }
