@@ -6,6 +6,7 @@
       "name": "Nurse Office",
       "type": "NSE",
       "color": "#ff9900",
+      "icon": "/redCross.png",
       "borderColor": "#000000"
     }
   ]
