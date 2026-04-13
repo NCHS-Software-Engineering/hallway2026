@@ -11,6 +11,7 @@ const NodeCanvas = ({
   const [connections, setConnections] = useState([]);
   const [path, setPath] = useState([]);
   const [specialLocations, setSpecialLocations] = useState([]);
+  const [specialLocationIcons, setSpecialLocationIcons] = useState({});
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [stairsIcon, setStairsIcon] = useState(null);
@@ -42,6 +43,39 @@ const NodeCanvas = ({
         setSpecialLocations([]);
       });
   }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const iconSources = Array.from(new Set(
+      specialLocations
+        .map((special) => special && special.icon)
+        .filter(Boolean)
+    ));
+
+    if (iconSources.length === 0) {
+      setSpecialLocationIcons({});
+      return undefined;
+    }
+
+    iconSources.forEach((src) => {
+      const img = new Image();
+      img.onload = () => {
+        if (isCancelled) return;
+        setSpecialLocationIcons((prev) => ({
+          ...prev,
+          [src]: img,
+        }));
+      };
+      img.onerror = () => {
+        console.error('Failed to load special location icon:', src);
+      };
+      img.src = src;
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [specialLocations]);
 
   // Load connections and node coordinates
   useEffect(() => {
@@ -333,43 +367,50 @@ const NodeCanvas = ({
             if (drawnSpecialIds.has(specialUniqueId)) return;
             drawnSpecialIds.add(specialUniqueId);
 
-            ctx.beginPath();
-            ctx.arc(nx, mappedY, 14, 0, Math.PI * 2);
-            ctx.fillStyle = /**special.color || */ '#ff0000';
-            ctx.fill();
-            ctx.strokeStyle = special.borderColor || '#000000';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            ctx.closePath();
-
             const labelText = special.name || 'Waypoint';
-            const labelX = nx + 26;
-            const labelY = mappedY - 15;
-            const labelPaddingX = 10;
-            const labelPaddingY = 6;
+            const iconSrc = special.icon;
+            const icon = iconSrc ? specialLocationIcons[iconSrc] : null;
+            const iconSize = 28;
+            const gap = icon ? 10 : 0;
 
             ctx.font = 'bold 25px Arial';
             const labelWidth = ctx.measureText(labelText).width;
+            const labelPaddingX = 10;
+            const labelPaddingY = 6;
+            const contentWidth = (icon ? iconSize : 0) + gap + labelWidth;
+            const boxX = nx + 26;
+            const boxY = mappedY - 36;
+            const boxHeight = Math.max(iconSize, 30) + labelPaddingY * 2;
 
             ctx.fillStyle = '#aaaaaa';
             ctx.fillRect(
-              labelX - labelPaddingX,
-              labelY - 25 - labelPaddingY,
-              labelWidth + labelPaddingX * 2,
-              -10 + labelPaddingY * 2
+              boxX - labelPaddingX,
+              boxY,
+              contentWidth + labelPaddingX * 2,
+              boxHeight
             );
 
             ctx.strokeStyle = '#000000';
             ctx.lineWidth = 2;
             ctx.strokeRect(
-              labelX - labelPaddingX,
-              labelY - 25 - labelPaddingY,
-              labelWidth + labelPaddingX * 2,
-              25 + labelPaddingY * 2
+              boxX - labelPaddingX,
+              boxY,
+              contentWidth + labelPaddingX * 2,
+              boxHeight
             );
 
+            const contentCenterY = boxY + 95 + boxHeight / 2;
+            let textX = boxX;
+
+            if (icon) {
+              const iconY = contentCenterY - iconSize - 160 / 2;
+              ctx.drawImage(icon, boxX, iconY, iconSize, iconSize);
+              textX += iconSize + gap;
+            }
+
+            const textY = contentCenterY -86;
             ctx.fillStyle = '#ff0000';
-            ctx.fillText(labelText, labelX, labelY);
+            ctx.fillText(labelText, textX, textY);
           });
         }
       }
@@ -394,7 +435,7 @@ const NodeCanvas = ({
         }
       }, 0);
     }
-  }, [backgroundImage, path, nodes, stairsIcon]);
+  }, [backgroundImage, path, nodes, stairsIcon, specialLocationIcons]);
 
   // Call drawCanvas when both path and nodes are ready
   useEffect(() => {
