@@ -191,7 +191,7 @@ function App() {
             <span>Time Remaining: {Math.floor(remainingSeconds / 60)}:{String(remainingSeconds % 60).padStart(2, '0')}</span>
           </div>
           <div className="route-block">
-            <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
+            <label htmlFor="rooms-end" style={{ fontWeight: 600, fontSize: '36px' }}>
               Route to:
             </label>
             <input
@@ -200,11 +200,8 @@ function App() {
               value={room}
               onChange={handleSelectChange}
               placeholder= "Room #"
-              style={{ fontSize: '1.6rem', padding: '8px 10px', width: '200px', color: 'black', textAlign: 'center' }}
+              style={{ fontSize: '36px', fontWeight: 500, padding: '8px 10px', width: '200px', color: 'black', textAlign: 'center' }}
             />
-            <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
-              Route
-            </button>
           </div>
         </div>
       </header>
