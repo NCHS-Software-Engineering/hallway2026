@@ -8,6 +8,15 @@
       "color": "#ff9900",
       "icon": "/redCross.png",
       "borderColor": "#000000"
+    },
+    {
+      "id": "library",
+      "nodeIds": ["LIB", "71", "47", "171", "172", "173", "174"],
+      "name": "Library",
+      "type": "LIB",
+      "color": "#ff9900",
+      "icon": "/library.png",
+      "borderColor": "#000000"
     }
   ]
 }
