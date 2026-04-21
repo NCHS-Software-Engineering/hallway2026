@@ -432,7 +432,7 @@ const NodeCanvas = ({
                 25 + labelPaddingY * 2
               );
 
-              ctx.fillStyle = '#ff0000';
+              ctx.fillStyle = '#000000';
               ctx.fillText(labelText, labelX, labelY);
             }
           });
