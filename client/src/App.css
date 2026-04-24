@@ -35,16 +35,19 @@
 ========================= */
 
 .top-bar {
-  height: 180px;
+  min-height: 120px;
+  height: auto;
   background: linear-gradient(
     135deg,
     var(--primary-red-dark),
     var(--primary-red-light)
   );
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  gap: 12px;
+  padding: 15px 20px;
   color: var(--text-light);
   box-shadow: var(--shadow-md);
 }
@@ -53,7 +56,9 @@
 .header {
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
 }
+
 
 .header-left {
   display: flex;
@@ -62,16 +67,17 @@
 }
 
 .logo {
-  height: 80px;
+  height: 70px;
   width: auto;
-  padding-left: 20px;
+  padding-left: 12px;
 }
 
 .top-bar h1 {
-  font-size: 50px;
+  font-size: clamp(1.25rem, 3vw, 2.2rem);
   font-weight: 600; /* make title bold */
   letter-spacing: 1px;
-  padding-left: 40px;
+  padding-left: 20px;
+  margin: 0;
 }
 
 /* larger text for the label, select and button in the top bar route section */
@@ -110,6 +116,7 @@
 .main-layout {
   flex: 1;
   display: flex;
+  gap: 20px;
 }
 
 /* =========================
@@ -117,14 +124,16 @@
 ========================= */
 
 .left-panel {
-  width: 240px;
+  flex: 0 0 260px;
+  min-width: 230px;
+  max-width: 320px;
   background: linear-gradient(
     180deg,
     var(--panel-dark),
     var(--panel-dark-2)
   );
   color: var(--text-light);
-  padding: 20px;
+  padding: 16px;
   box-shadow: inset -1px 0 0 rgba(255,255,255,0.05);
 }
 
@@ -137,17 +146,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 20px;
+  padding: 20px;
+  min-width: 0;
 }
 
 /* Map Card (Hero Element) */
 
 .map-card {
+  width: 100%;
+  max-width: 1200px;
   background: var(--card-bg);
-  padding: 30px;
+  padding: 18px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   transition: transform 0.2s ease;
+  overflow: hidden;
 }
 
 .map-card:hover {
@@ -159,11 +172,11 @@
 ========================= */
 
 .floor-label {
-  margin-top: 20px;
+  margin-top: 16px;
   font-weight: 600;
   letter-spacing: 2px;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: clamp(0.75rem, 1.4vw, 1rem);
 }
 
 /* =========================
@@ -199,7 +212,17 @@ input, select {
   border: none;
   outline: none;
   font-size: 14px;
+  width: 100%;
+  max-width: 260px;
+  box-sizing: border-box;
 }
+
+input[type='text'], .room-input {
+  width: 100%;
+  max-width: 320px;
+}
+
+
 
 /* =========================
    MAP SVG (if needed)
@@ -210,6 +233,13 @@ svg {
   height: auto;
 }
 
+canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+
 /* =========================
    ROUTE BLOCK WITH SLANTED LEFT EDGE - background of the [  "Route to: ####" ROUTE  ]
 ========================= */
@@ -219,8 +249,8 @@ svg {
   display: inline-flex;      /* shrink to content width */
   align-items: center;
   gap: 10px;
-  padding: 10px 15px 10px 40px; /* Top, Right, Bottom, Left  */
-  border-radius: var(--radius);
+  padding: 15px 40px 15px 40px; /* Top, Right, Bottom, Left  */
+  border-radius: 0;
   overflow: visible;         /* allow pseudo-element to show outside edges */
 }
 
@@ -231,8 +261,8 @@ svg {
   inset: 0;
   z-index: 0;                /* behind content */
   background: #ffffff;
-  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);  /* slanted left edge */
-  border-radius: var(--radius);
+  clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%);  /* slant on left side  (15% 0, 100% 0, 100% 100%, 0 100%); */
+  border-radius: 0 14px 14px 0;  /* curve only right end (far end) */
   box-shadow: var(--shadow-md);
 }
 
@@ -243,10 +273,110 @@ svg {
   color: var(--text-light);
 }
 
+/* Style the button within route-block */
+.route-block button {
+  background: var(--primary-red);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-weight: 600;
+}
+
+.route-block button:hover {
+  background: var(--primary-red-light);
+}
+
+.route-block button:active {
+  transform: scale(0.97);
+}
+
+/* INACTIVITY TIMER BLOCK with opposite polygon slant */
+.timer-block {
+  position: relative;        /* for pseudo-element stacking */
+  display: inline-flex;      /* shrink to content width */
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 40px 21px 40px; /* Top, Right, Bottom, Left - increased vertical padding */
+  border-radius: 0;
+  overflow: visible;         /* allow pseudo-element to show outside edges */
+}
+
+/* pseudo-element for slanted background - opposite slant from route-block */
+.timer-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;                /* behind content */
+  background: #ffffff;       /* white background */
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);  /* slant on right side */
+  border-radius: 14px 0 0 14px;  /* curve only left end (far end) */
+  box-shadow: var(--shadow-md);
+}
+
+/* make the timer content appear above the slanted background */
+.timer-block > * {
+  position: relative;
+  z-index: 1;
+  color: #000000;
+  font-size: 36px;
+  font-weight: 600;
+}
+
+/* container for top-bar controls - adds gap between timer and route blocks */
+.top-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;  /* small gap between timer and route blocks */
+}
+
 /* responsive tweak: stack vertically on small screens */
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    width: 100%;
+    max-width: none;
+    flex: 1 1 auto;
+    box-shadow: none;
+  }
+
+  .map-section {
+    padding: 16px;
+  }
+
+  .top-bar {
+    justify-content: center;
+    text-align: center;
+  }
+
   .route-block {
     flex-direction: column;
     align-items: stretch;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .top-bar .route-block label,
+  .top-bar .route-block select,
+  .top-bar .route-block button,
+  .top-bar .route-block input {
+    font-size: 1.1rem;
+  }
+
+  .logo {
+    height: 60px;
+  }
+
+  .top-bar-controls {
+    flex-direction: column;
+    gap: 10px;
   }
 }
+
