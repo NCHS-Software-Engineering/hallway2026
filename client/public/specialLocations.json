@@ -17,6 +17,24 @@
       "color": "#ff9900",
       "icon": "/library.png",
       "borderColor": "#000000"
+    },
+    {
+      "id": "main-office",
+      "nodeIds": ["MO", "0", "1", "173", "174"],
+      "name": "Main Office",
+      "type": "MO",
+      "color": "#ff9900",
+      "icon": "/main-office.png",
+      "borderColor": "#000000"
+    },
+    {
+      "id": "main-gym",
+      "nodeIds": ["MG", "71", "70", "67", "65"],
+      "name": "Main Gym",
+      "type": "MG",
+      "color": "#ff9900",
+      "icon": "/basketball.png",
+      "borderColor": "#000000"
     }
   ]
 }
