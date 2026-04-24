@@ -5,7 +5,10 @@ const NodeCanvas = ({
   src = '/finalFilter.json',
   csvSrc = '/p1.csv',
   backgroundImage = '',
-  endId = ""
+  endId = "",
+  canvasScale = 1,
+  canvasOffsetX = 0,
+  canvasOffsetY = 0
 }) => {
   const [nodes, setNodes] = useState([]);
   const [connections, setConnections] = useState([]);
@@ -267,7 +270,14 @@ const NodeCanvas = ({
   return (
     <div style={{ position: 'relative' }}>
       <h1>Node Network to End Node {endId}</h1>
-      <canvas ref={canvasRef} style={{ border: '1px solid black' }} />
+      <canvas
+        ref={canvasRef}
+        style={{
+          border: '1px solid black',
+          transform: `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(${canvasScale})`,
+          transformOrigin: 'top left'
+        }}
+      />
     </div>
   );
 };

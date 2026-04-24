@@ -20,6 +20,13 @@ function App() {
   const [showWarning, setShowWarning] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState(60);
 
+  // Tune these values to align third-floor rendering with first-floor rendering.
+  const THIRD_FLOOR_ALIGNMENT = {
+    canvasScale: .45,
+    canvasOffsetX: 550,
+    canvasOffsetY: 0,
+  };
+
   // 1. Read the room from the URL when the app loads
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -164,7 +171,7 @@ function App() {
     } else if(parseInt(room[0]) === 2) {
       RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27}/></li><li><JsonRead src="finalFilter.json" csvSrc="p2.csv" backgroundImage="secondFloor2.png" endId={room}/></li></ul>; 
     } else if(parseInt(room[0]) === 3) {
-      RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27}/></li><li><JsonRead src="finalFilter.json" csvSrc="p3.csv" backgroundImage="thirdFloor2.png" endId={room}/></li></ul>; 
+      RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27}/></li><li><JsonRead src="finalFilter.json" csvSrc="p3.csv" backgroundImage="thirdFloor2.png" endId={room} {...THIRD_FLOOR_ALIGNMENT}/></li></ul>; 
     } else {
       RenderedComponent = <div>Sorry We Don't Have This Yet</div>;
     }
