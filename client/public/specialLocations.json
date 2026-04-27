@@ -35,6 +35,15 @@
       "color": "#ff9900",
       "icon": "/basketball.png",
       "borderColor": "#000000"
+    },
+    {
+      "id": "little-theater",
+      "nodeIds": ["LT", "17", "18", "19", "20"],
+      "name": "Little Theater",
+      "type": "LT",
+      "color": "#ff9900",
+      "icon": "/theater.png",
+      "borderColor": "#000000"
     }
   ]
 }
