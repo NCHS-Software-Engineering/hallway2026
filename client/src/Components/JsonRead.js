@@ -13,9 +13,73 @@ const NodeCanvas = ({
   const [nodes, setNodes] = useState([]);
   const [connections, setConnections] = useState([]);
   const [path, setPath] = useState([]);
+  const [specialLocations, setSpecialLocations] = useState([]);
+  const [specialLocationIcons, setSpecialLocationIcons] = useState({});
+  const [revealedSpecialIds, setRevealedSpecialIds] = useState(() => new Set());
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const canvasRef = useRef(null);
+  const specialHitAreasRef = useRef([]);
+
+  // Load stairs icon once
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/stairs_icon.png';
+    img.onload = () => {
+      console.log('Stairs icon loaded successfully');
+      setStairsIcon(img);
+    };
+    img.onerror = () => console.error('Failed to load stairs_icon.png');
+  }, []);
+
+  // Load important waypoint definitions (nurse office database for now)
+  useEffect(() => {
+    fetch('/specialLocations.json')
+      .then((res) => {
+        if (!res.ok) throw new Error('Special locations fetch failed');
+        return res.json();
+      })
+      .then((json) => {
+        setSpecialLocations((json && Array.isArray(json.specialLocations)) ? json.specialLocations : []);
+      })
+      .catch((err) => {
+        console.error('Error loading specialLocations.json:', err);
+        setSpecialLocations([]);
+      });
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const iconSources = Array.from(new Set(
+      specialLocations
+        .map((special) => special && special.icon)
+        .filter(Boolean)
+    ));
+
+    if (iconSources.length === 0) {
+      setSpecialLocationIcons({});
+      return undefined;
+    }
+
+    iconSources.forEach((src) => {
+      const img = new Image();
+      img.onload = () => {
+        if (isCancelled) return;
+        setSpecialLocationIcons((prev) => ({
+          ...prev,
+          [src]: img,
+        }));
+      };
+      img.onerror = () => {
+        console.error('Failed to load special location icon:', src);
+      };
+      img.src = src;
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [specialLocations]);
 
   // Load connections and node coordinates
   useEffect(() => {
@@ -163,7 +227,12 @@ const NodeCanvas = ({
     setPath([]);
   }, [endId, connections, findStoredPathEndingAtTarget, findPathFallback]);
 
-  // Draw canvas
+  // Reset revealed labels whenever the route/path changes
+  useEffect(() => {
+    setRevealedSpecialIds(new Set());
+  }, [path]);
+
+  // Draw canvas (robust: attach handlers before src, handle cached images)
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -238,6 +307,104 @@ const NodeCanvas = ({
         ctx.stroke();
         ctx.closePath();
       }
+
+      // Draw special waypoint markers (nurse office, etc.)
+      specialHitAreasRef.current = [];
+      if (specialLocations.length > 0) {
+        const specialByNodeId = new Map();
+        specialLocations.forEach((s) => {
+          const nodeIds = Array.isArray(s.nodeIds) ? s.nodeIds : (s.id ? [s.id] : []);
+          nodeIds.forEach((nodeId) => {
+            const key = String(nodeId).trim();
+            if (!specialByNodeId.has(key)) specialByNodeId.set(key, []);
+            specialByNodeId.get(key).push(s);
+          });
+        });
+
+        const drawnSpecialIds = new Set();
+
+        for (const nodeId of path) {
+          const key = String(nodeId).trim();
+          const specials = specialByNodeId.get(key);
+          if (!specials) continue;
+
+          const node = nodeMap.get(key);
+          if (!node) continue;
+
+          const nx = parseFloat(node.X);
+          const ny = parseFloat(node.Y);
+          if (Number.isNaN(nx) || Number.isNaN(ny)) continue;
+
+          const mappedY = ih - ny - yOffset;
+
+          specials.forEach((special) => {
+            const specialUniqueId = special.id || `${special.name}-${key}`;
+            if (drawnSpecialIds.has(specialUniqueId)) return;
+            drawnSpecialIds.add(specialUniqueId);
+
+            const iconSrc = special.icon;
+            const icon = iconSrc ? specialLocationIcons[iconSrc] : null;
+            const markerRadius = 20;
+            specialHitAreasRef.current.push({
+              id: specialUniqueId,
+              x: nx,
+              y: mappedY,
+              radius: markerRadius + 8,
+            });
+
+            // Always draw the waypoint icon marker
+            ctx.beginPath();
+            ctx.arc(nx, mappedY, markerRadius, 0, Math.PI * 2);
+            ctx.fillStyle = /*special.color ||*/ '#dddddd';
+            ctx.fill();
+            ctx.strokeStyle = special.borderColor || '#000000';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.closePath();
+
+            if (icon) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(nx, mappedY, markerRadius - 2, 0, Math.PI * 2);
+              ctx.clip();
+              ctx.drawImage(icon, nx - 22, mappedY - 22, 44, 44);
+              ctx.restore();
+            }
+
+            // Only reveal label after user clicks/taps icon
+            if (revealedSpecialIds.has(specialUniqueId)) {
+              const labelText = special.name || 'Waypoint';
+              const labelX = nx + 26;
+              const labelY = mappedY - 15;
+              const labelPaddingX = 10;
+              const labelPaddingY = 6;
+
+              ctx.font = 'bold 25px Arial';
+              const labelWidth = ctx.measureText(labelText).width;
+
+              ctx.fillStyle = '#aaaaaa';
+              ctx.fillRect(
+                labelX - labelPaddingX,
+                labelY - 25 - labelPaddingY,
+                labelWidth + labelPaddingX * 2,
+                25 + labelPaddingY * 2
+              );
+
+              ctx.strokeStyle = '#000000';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(
+                labelX - labelPaddingX,
+                labelY - 25 - labelPaddingY,
+                labelWidth + labelPaddingX * 2,
+                25 + labelPaddingY * 2
+              );
+
+              ctx.fillStyle = '#000000';
+              ctx.fillText(labelText, labelX, labelY);
+            }
+          });
+        }
+      }
     };
 
     const handleImageError = (err) => {
@@ -258,7 +425,51 @@ const NodeCanvas = ({
         }
       }, 0);
     }
-  }, [backgroundImage, path, nodes]);
+  }, [backgroundImage, path, nodes, stairsIcon, specialLocationIcons, revealedSpecialIds]);
+
+  const revealSpecialAtPoint = useCallback((clientX, clientY) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    const logicalWidth = canvas.width / (window.devicePixelRatio || 1);
+    const logicalHeight = canvas.height / (window.devicePixelRatio || 1);
+    const x = (clientX - rect.left) * (logicalWidth / rect.width);
+    const y = (clientY - rect.top) * (logicalHeight / rect.height);
+
+    const hit = specialHitAreasRef.current.find((area) => {
+      const dx = x - area.x;
+      const dy = y - area.y;
+      return (dx * dx + dy * dy) <= (area.radius * area.radius);
+    });
+
+    if (!hit) {
+      setRevealedSpecialIds((prev) => {
+        if (prev.size === 0) return prev;
+        return new Set();
+      });
+      return;
+    }
+
+    setRevealedSpecialIds((prev) => {
+      if (prev.has(hit.id)) return prev;
+      const next = new Set(prev);
+      next.add(hit.id);
+      return next;
+    });
+  }, []);
+
+  const handleCanvasClick = useCallback((event) => {
+    revealSpecialAtPoint(event.clientX, event.clientY);
+  }, [revealSpecialAtPoint]);
+
+  const handleCanvasTouchStart = useCallback((event) => {
+    const touch = event.touches && event.touches[0];
+    if (!touch) return;
+    revealSpecialAtPoint(touch.clientX, touch.clientY);
+  }, [revealSpecialAtPoint]);
 
   // Call drawCanvas when both path and nodes are ready
   useEffect(() => {
@@ -268,18 +479,13 @@ const NodeCanvas = ({
   }, [nodes, path, backgroundImage, drawCanvas]);
 
   return (
-    <div style={{ position: 'relative' }}>
-      <h1>Node Network to End Node {endId}</h1>
-      <canvas
-        ref={canvasRef}
-        style={{
-          border: '1px solid black',
-          transform: `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(${canvasScale})`,
-          transformOrigin: 'top left'
-        }}
-      />
-    </div>
-  );
+  <canvas
+    ref={canvasRef}
+    onClick={handleCanvasClick}
+    onTouchStart={handleCanvasTouchStart}
+    style={{ touchAction: 'manipulation' }}
+  />
+);
 };
 
 export default NodeCanvas;
