@@ -5,7 +5,8 @@ const NodeCanvas = ({
   src = '/finalFilter.json',
   csvSrc = '/p1.csv',
   backgroundImage = '',
-  endId = ""
+  endId = "",
+  markerImage = '/destination.png' // <-- Added property with default fallback
 }) => {
   const [nodes, setNodes] = useState([]);
   const [connections, setConnections] = useState([]);
@@ -167,6 +168,10 @@ const NodeCanvas = ({
 
     const ctx = canvas.getContext('2d');
     const image = new Image();
+    const destPin = new Image();
+    
+    // <-- Changed this to use the markerImage property
+    destPin.src = markerImage; 
 
     console.log('drawCanvas start, backgroundImage =', backgroundImage);
 
@@ -218,22 +223,40 @@ const NodeCanvas = ({
         }
       }
 
-      // Draw nodes for the path (no numeric labels)
-      for (const nodeId of path) {
+      // Draw nodes for the path (and the pin at the end)
+      for (let i = 0; i < path.length; i++) {
+        const nodeId = path[i];
+        const isLastNode = (i === path.length - 1);
         const node = nodeMap.get(String(nodeId).trim());
         if (!node) continue;
+        
         const nx = parseFloat(node.X);
         const ny = parseFloat(node.Y);
         if (Number.isNaN(nx) || Number.isNaN(ny)) continue;
+        
         const mappedY = ih - ny - yOffset;
-        ctx.beginPath();
-        ctx.arc(nx, mappedY, 8, 0, Math.PI * 2);
-        ctx.fillStyle = 'blue';
-        ctx.fill();
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        ctx.closePath();
+
+        if (isLastNode) {
+          // Set how tall you want the marker to be
+          const targetHeight = 70; 
+          
+          // Automatically calculate the width to keep the exact original proportions!
+          // (Defaults to a square if the image hasn't fully loaded its dimensions yet)
+          const aspectRatio = (destPin.width && destPin.height) ? (destPin.width / destPin.height) : 1;
+          const targetWidth = targetHeight * aspectRatio;
+
+          ctx.drawImage(destPin, nx - (targetWidth / 2), mappedY - targetHeight, targetWidth, targetHeight);
+        } else {
+          // Draw the normal blue circle along the path
+          ctx.beginPath();
+          ctx.arc(nx, mappedY, 8, 0, Math.PI * 2);
+          ctx.fillStyle = 'blue';
+          ctx.fill();
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.closePath();
+        }
       }
     };
 
@@ -255,7 +278,7 @@ const NodeCanvas = ({
         }
       }, 0);
     }
-  }, [backgroundImage, path, nodes]);
+  }, [backgroundImage, path, nodes, markerImage]); // <-- added markerImage to dependency array
 
   // Call drawCanvas when both path and nodes are ready
   useEffect(() => {

@@ -9,7 +9,7 @@ import MapComponentf2 from "./MapComponentf2";
 import MapComponentf3 from "./MapComponentf3";
 import JsonRead from "./Components/JsonRead";
 import NCHSlogo from "./img/NCHSlogo.png";
-import QRCode from "react-qr-code"; // <-- Make sure to run `npm install react-qr-code`
+import QRCode from "react-qr-code"; 
 
 function App() {
   const [floor, setFloor] = useState(-1);
@@ -92,9 +92,11 @@ function App() {
     if(parseInt(room[0]) === 1) {
       RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={room}/>;
     } else if(parseInt(room[0]) === 2) {
-      RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27}/></li><li><JsonRead src="finalFilter.json" csvSrc="p2.csv" backgroundImage="secondFloor2.png" endId={room}/></li></ul>; 
+      // ADDED markerImage="/Stairs.png" for Node 27 here!
+      RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27} markerImage="/Stairs.png" /></li><li><JsonRead src="finalFilter.json" csvSrc="p2.csv" backgroundImage="secondFloor2.png" endId={room}/></li></ul>; 
     } else if(parseInt(room[0]) === 3) {
-      RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27}/></li><li><JsonRead src="finalFilter.json" csvSrc="p3.csv" backgroundImage="thirdFloor2.png" endId={room}/></li></ul>; 
+      // ADDED markerImage="/Stairs.png" for Node 27 here!
+      RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27} markerImage="/Stairs.png" /></li><li><JsonRead src="finalFilter.json" csvSrc="p3.csv" backgroundImage="thirdFloor2.png" endId={room}/></li></ul>; 
     } else {
       RenderedComponent = <div>Sorry We Don't Have This Yet</div>;
     }
