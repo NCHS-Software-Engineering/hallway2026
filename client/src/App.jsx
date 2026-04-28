@@ -9,43 +9,91 @@ import MapComponentf2 from "./MapComponentf2";
 import MapComponentf3 from "./MapComponentf3";
 import JsonRead from "./Components/JsonRead";
 import NCHSlogo from "./img/NCHSlogo.png";
+import QRCode from "react-qr-code"; // <-- Make sure to run `npm install react-qr-code`
 
 function App() {
   const [floor, setFloor] = useState(-1);
   const [room, setRoom] = useState("");
   const [route, setRoute] = useState(null);
   const timeoutRef = useRef(null);
-  const warningTimeoutRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
   const [showWarning, setShowWarning] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState(60);
+
+  // Tune these values to align third-floor rendering with first-floor rendering.
+  const THIRD_FLOOR_ALIGNMENT = {
+    canvasScale: .45,
+    canvasOffsetX: 550,
+    canvasOffsetY: 0,
+  };
+
+  // 1. Read the room from the URL when the app loads
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get("room");
+    if (roomParam) {
+      setRoom(roomParam);
+      setRoute(roomParam);
+    }
+  }, []);
 
   useEffect(() => {
-    // When a route is active, start both the warning and the reset timers
+
     if (route !== null && route !== '') {
+      // Clear any existing timers/intervals
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
 
-      // Show warning when 10 seconds remain (after 20s)
-      warningTimeoutRef.current = setTimeout(() => {
-        setShowWarning(true);
-      }, 30000);
 
-      // Reset after 30s
+      // Reset remaining seconds to 60
+      setRemainingSeconds(60);
+      setShowWarning(false);
+
+      // Start countdown interval
+      let secondsLeft = 60;
+      countdownIntervalRef.current = setInterval(() => {
+        secondsLeft -= 1;
+        setRemainingSeconds(secondsLeft);
+
+        // Show warning when 15 seconds remain
+        if (secondsLeft === 15) {
+          setShowWarning(true);
+        }
+
+        // Reset everything when countdown reaches 0
+        if (secondsLeft <= 0) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+          setRoom('');
+          setRoute(null);
+          setShowWarning(false);
+          setRemainingSeconds(60);
+        }
+      }, 1000);
+
+      // Timeout to ensure cleanup at 60 seconds
+
       timeoutRef.current = setTimeout(() => {
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
         setRoom('');
         setRoute(null);
         setShowWarning(false);
-      }, 40000);
+        setRemainingSeconds(60);
+      }, 60000);
     } else {
-      // Clear timers and hide warning when no route
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-      if (warningTimeoutRef.current) {
-        clearTimeout(warningTimeoutRef.current);
-        warningTimeoutRef.current = null;
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
       }
       setShowWarning(false);
+      setRemainingSeconds(60);
     }
 
     return () => {
@@ -53,54 +101,78 @@ function App() {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-      if (warningTimeoutRef.current) {
-        clearTimeout(warningTimeoutRef.current);
-        warningTimeoutRef.current = null;
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
       }
     };
   }, [route]);
 
   const handleImStillHere = () => {
-    // Hide warning and restart both timers
+
+    // Hide warning and restart countdown
     setShowWarning(false);
-    if (warningTimeoutRef.current) {
-      clearTimeout(warningTimeoutRef.current);
-    }
+    
+    // Clear existing timers
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
 
-    warningTimeoutRef.current = setTimeout(() => {
-      setShowWarning(true);
-    }, 30000);
+    // Reset remaining seconds to 120
+    setRemainingSeconds(60);
 
+
+    // Start new countdown interval
+    let secondsLeft = 60;
+    countdownIntervalRef.current = setInterval(() => {
+      secondsLeft -= 1;
+      setRemainingSeconds(secondsLeft);
+
+      // Show warning when 15 seconds remain
+      if (secondsLeft === 15) {
+        setShowWarning(true);
+      }
+
+      // Reset everything when countdown reaches 0
+      if (secondsLeft <= 0) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+        setRoom('');
+        setRoute(null);
+        setShowWarning(false);
+        setRemainingSeconds(60);
+      }
+    }, 1000);
+
+    // Timeout to ensure cleanup at 60 seconds
     timeoutRef.current = setTimeout(() => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
       setRoom('');
       setRoute(null);
       setShowWarning(false);
-    }, 40000);
+      setRemainingSeconds(60);
+    }, 60000);
   };
 
   let RenderedComponent;
-  if (route === null || route === '')
-  {
-    // show first floor map with only the start node (ID 0) highlighted
+  if (route === null || route === '') {
     RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId="0" />;
-  }
-  else if (route.length === 2){
+  } else if (route.length === 2) {
     RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={room}/>;
-  }
-  else{
-    if(parseInt(room[0]) === 1){
+  } else {
+    if(parseInt(room[0]) === 1) {
       RenderedComponent = <JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={room}/>;
-    }
-    else if(parseInt(room[0]) === 2){
+    } else if(parseInt(room[0]) === 2) {
       RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27}/></li><li><JsonRead src="finalFilter.json" csvSrc="p2.csv" backgroundImage="secondFloor2.png" endId={room}/></li></ul>; 
-    }
-    else if(parseInt(room[0]) === 3){
-      RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27}/></li><li><JsonRead src="finalFilter.json" csvSrc="p3.csv" backgroundImage="thirdFloor2.png" endId={room}/></li></ul>; 
-    }
-    else{
+    } else if(parseInt(room[0]) === 3) {
+      RenderedComponent = <ul><li><JsonRead src="finalFilter.json" csvSrc="p1.csv" backgroundImage="firstFloor2.png" endId={27}/></li><li><JsonRead src="finalFilter.json" csvSrc="p3.csv" backgroundImage="thirdFloor2.png" endId={room} {...THIRD_FLOOR_ALIGNMENT}/></li></ul>; 
+    } else {
       RenderedComponent = <div>Sorry We Don't Have This Yet</div>;
     }
   }
@@ -108,9 +180,19 @@ function App() {
   const handleSelectChange = (e) => {
     const selectedRoom = e.target.value;
     setRoom(selectedRoom);
-    setRoute(selectedRoom);
+
+    // Start the timer immediately when any input is entered
+    if (selectedRoom && selectedRoom.length > 0) {
+      setRoute(selectedRoom);
+    } else {
+      setRoute(null);
+    }
     console.log('Selected Room:', selectedRoom);
+
   };
+
+  // 2. HARDCODED LIVE URL: This guarantees the QR code points to the real AWS server
+  const currentUrl = `http://nav.redhawks.us/?room=${room}`;
 
   return (
     <div className="app-container">
@@ -123,21 +205,25 @@ function App() {
           </div>
         </div>
 
-        <div className="route-block">
-          <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
-            Route to:
-          </label>
-          <input
-            id="rooms-end"
-            type="text"
-            value={room}
-            onChange={handleSelectChange}
-            placeholder= "Room #"
-            style={{ fontSize: '1.6rem', padding: '8px 10px', width: '200px', color: 'black', textAlign: 'center' }}
-          />
-          <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
-            Route
-          </button>
+
+        <div className="top-bar-controls">
+          <div className="timer-block">
+            <span>Time Remaining: {Math.floor(remainingSeconds / 60)}:{String(remainingSeconds % 60).padStart(2, '0')}</span>
+          </div>
+          <div className="route-block">
+            <label htmlFor="rooms-end" style={{ fontWeight: 600, fontSize: '36px' }}>
+              Route to:
+            </label>
+            <input
+              id="rooms-end"
+              type="text"
+              value={room}
+              onChange={handleSelectChange}
+              placeholder= "Room #"
+              style={{ fontSize: '36px', fontWeight: 500, padding: '8px 10px', width: '200px', color: 'black', textAlign: 'center' }}
+            />
+          </div>
+
         </div>
       </header>
 
@@ -152,6 +238,14 @@ function App() {
           <p>Daniel Kozlowski '26</p>
           <p>Yutian Wang '26</p>
           <p>Fionn McCabe-Wild '26</p>
+
+          {/* 3. Render the QR Code when there is an active route */}
+          {route && route !== '' && (
+            <div style={{ marginTop: '40px', background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ color: 'black', fontWeight: 'bold', marginBottom: '10px', fontSize: '1.1rem' }}>Take the Map With You</p>
+              <QRCode value={currentUrl} size={150} />
+            </div>
+          )}
         </aside>
 
         {/* MAP SECTION */}
@@ -180,5 +274,3 @@ function App() {
 }
 
 export default App;
-
-
