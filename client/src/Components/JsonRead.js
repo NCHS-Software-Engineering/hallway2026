@@ -6,7 +6,7 @@ const NodeCanvas = ({
   csvSrc = '/p1.csv',
   backgroundImage = '',
   endId = "",
-  markerImage = '/destination.png' // <-- Added property with default fallback
+  markerImage = '/destination.png', // <-- Added property with default fallback
   canvasScale = 1,
   canvasOffsetX = 0,
   canvasOffsetY = 0
@@ -28,7 +28,6 @@ const NodeCanvas = ({
     img.src = '/stairs_icon.png';
     img.onload = () => {
       console.log('Stairs icon loaded successfully');
-      setStairsIcon(img);
     };
     img.onerror = () => console.error('Failed to load stairs_icon.png');
   }, []);
@@ -271,7 +270,7 @@ const NodeCanvas = ({
       // Draw lines
       if (Array.isArray(path) && path.length > 1) {
         ctx.strokeStyle = 'red';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 10; // <-- Increased from 4 to 10 for a thicker red line!
         ctx.lineCap = 'round';
         for (let i = 0; i < path.length - 1; i++) {
           const startNode = nodeMap.get(String(path[i]).trim());
@@ -295,7 +294,7 @@ const NodeCanvas = ({
         }
       }
 
-      // Draw nodes for the path (and the pin at the end)
+      // Draw nodes for the path (only the pin at the end)
       for (let i = 0; i < path.length; i++) {
         const nodeId = path[i];
         const isLastNode = (i === path.length - 1);
@@ -318,17 +317,8 @@ const NodeCanvas = ({
           const targetWidth = targetHeight * aspectRatio;
 
           ctx.drawImage(destPin, nx - (targetWidth / 2), mappedY - targetHeight, targetWidth, targetHeight);
-        } else {
-          // Draw the normal blue circle along the path
-          ctx.beginPath();
-          ctx.arc(nx, mappedY, 8, 0, Math.PI * 2);
-          ctx.fillStyle = 'blue';
-          ctx.fill();
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-          ctx.closePath();
         }
+        // Notice the 'else' block drawing the blue circles is completely removed here!
       }
 
       // Draw special waypoint markers (nurse office, etc.)
@@ -448,7 +438,7 @@ const NodeCanvas = ({
         }
       }, 0);
     }
-  }, [backgroundImage, path, nodes, stairsIcon, specialLocationIcons, revealedSpecialIds, markerImage]);
+  }, [backgroundImage, path, nodes, specialLocationIcons, revealedSpecialIds, markerImage]);
 
   const revealSpecialAtPoint = useCallback((clientX, clientY) => {
     const canvas = canvasRef.current;
