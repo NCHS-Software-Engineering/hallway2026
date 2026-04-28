@@ -1,0 +1,49 @@
+{
+  "specialLocations": [
+    {
+      "id": "nurse-office",
+      "nodeIds": ["058", "059", "NSE","155","166","170","168"],
+      "name": "Nurse Office",
+      "type": "NSE",
+      "color": "#ff9900",
+      "icon": "/redCross.png",
+      "borderColor": "#000000"
+    },
+    {
+      "id": "library",
+      "nodeIds": ["LIB", "71", "47", "171", "172", "173", "174"],
+      "name": "Library",
+      "type": "LIB",
+      "color": "#ff9900",
+      "icon": "/library.png",
+      "borderColor": "#000000"
+    },
+    {
+      "id": "main-office",
+      "nodeIds": ["MO", "0", "1", "173", "174"],
+      "name": "Main Office",
+      "type": "MO",
+      "color": "#ff9900",
+      "icon": "/main-office.png",
+      "borderColor": "#000000"
+    },
+    {
+      "id": "main-gym",
+      "nodeIds": ["MG", "71", "70", "67", "65"],
+      "name": "Main Gym",
+      "type": "MG",
+      "color": "#ff9900",
+      "icon": "/basketball.png",
+      "borderColor": "#000000"
+    },
+    {
+      "id": "little-theater",
+      "nodeIds": ["LT", "17", "18", "19", "20"],
+      "name": "Little Theater",
+      "type": "LT",
+      "color": "#ff9900",
+      "icon": "/theater.png",
+      "borderColor": "#000000"
+    }
+  ]
+}

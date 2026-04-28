@@ -249,8 +249,8 @@ canvas {
   display: inline-flex;      /* shrink to content width */
   align-items: center;
   gap: 10px;
-  padding: 10px 15px 10px 40px; /* Top, Right, Bottom, Left  */
-  border-radius: var(--radius);
+  padding: 15px 40px 15px 40px; /* Top, Right, Bottom, Left  */
+  border-radius: 0;
   overflow: visible;         /* allow pseudo-element to show outside edges */
 }
 
@@ -261,8 +261,8 @@ canvas {
   inset: 0;
   z-index: 0;                /* behind content */
   background: #ffffff;
-  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);  /* slanted left edge */
-  border-radius: var(--radius);
+  clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%);  /* slant on left side  (15% 0, 100% 0, 100% 100%, 0 100%); */
+  border-radius: 0 14px 14px 0;  /* curve only right end (far end) */
   box-shadow: var(--shadow-md);
 }
 
@@ -271,6 +271,67 @@ canvas {
   position: relative;
   z-index: 1;
   color: var(--text-light);
+}
+
+/* Style the button within route-block */
+.route-block button {
+  background: var(--primary-red);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-weight: 600;
+}
+
+.route-block button:hover {
+  background: var(--primary-red-light);
+}
+
+.route-block button:active {
+  transform: scale(0.97);
+}
+
+/* INACTIVITY TIMER BLOCK with opposite polygon slant */
+.timer-block {
+  position: relative;        /* for pseudo-element stacking */
+  display: inline-flex;      /* shrink to content width */
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 40px 21px 40px; /* Top, Right, Bottom, Left - increased vertical padding */
+  border-radius: 0;
+  overflow: visible;         /* allow pseudo-element to show outside edges */
+}
+
+/* pseudo-element for slanted background - opposite slant from route-block */
+.timer-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;                /* behind content */
+  background: #ffffff;       /* white background */
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);  /* slant on right side */
+  border-radius: 14px 0 0 14px;  /* curve only left end (far end) */
+  box-shadow: var(--shadow-md);
+}
+
+/* make the timer content appear above the slanted background */
+.timer-block > * {
+  position: relative;
+  z-index: 1;
+  color: #000000;
+  font-size: 36px;
+  font-weight: 600;
+}
+
+/* container for top-bar controls - adds gap between timer and route blocks */
+.top-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;  /* small gap between timer and route blocks */
 }
 
 /* responsive tweak: stack vertically on small screens */
@@ -312,24 +373,10 @@ canvas {
   .logo {
     height: 60px;
   }
+
+  .top-bar-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
-@media (max-width: 600px) {
-  .top-bar {
-    padding: 12px;
-  }
-  .header-left {
-    flex-direction: column;
-    align-items: center;
-  }
-  .top-bar h1 {
-    font-size: 1.4rem;
-    padding-left: 0;
-  }
-  .route-block {
-    padding: 10px;
-  }
-  .map-card {
-    padding: 14px;
-  }
-}
