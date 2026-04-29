@@ -163,10 +163,6 @@
   overflow: hidden;
 }
 
-.map-card:hover {
-  transform: translateY(-4px);
-}
-
 /* =========================
    FLOOR LABEL
 ========================= */
@@ -176,7 +172,7 @@
   font-weight: 600;
   letter-spacing: 2px;
   color: var(--text-muted);
-  font-size: clamp(0.75rem, 1.4vw, 1rem);
+  font-size: clamp(1.5rem, 3vw, 2.5rem); /* <-- Changed this! It will scale between 24px and 40px */
 }
 
 /* =========================
