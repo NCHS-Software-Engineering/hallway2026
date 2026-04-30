@@ -6,7 +6,7 @@ const NodeCanvas = ({
   csvSrc = '/p1.csv',
   backgroundImage = '',
   endId = "",
-  markerImage = '/destination.png', // <-- Added property with default fallback
+  markerImage = '/destination.png',
   canvasScale = 1,
   canvasOffsetX = 0,
   canvasOffsetY = 0
@@ -89,9 +89,7 @@ const NodeCanvas = ({
         return res.json();
       })
       .then((json) => {
-        // Accept either { connections: [...] } or a top-level array
         const conns = json && json.connections ? json.connections : json;
-        console.log('Fetched connections (sample):', Array.isArray(conns) ? conns.slice(0,5) : conns);
         setConnections(conns || []);
       })
       .catch(err => {
@@ -109,7 +107,6 @@ const NodeCanvas = ({
           X: parseFloat(row.X),
           Y: parseFloat(row.Y),
         }));
-        console.log('Parsed CSV rows:', result.data.length);
         setNodes(parsedNodes);
       },
       error: (err) => {
@@ -119,7 +116,6 @@ const NodeCanvas = ({
     });
   }, [src, csvSrc]);
 
-  // Helper: generate candidate tokens for a requested room ID.
   const roomCandidates = useCallback((raw) => {
     const s = String(raw).trim();
     const set = new Set();
@@ -132,7 +128,6 @@ const NodeCanvas = ({
     return Array.from(set);
   }, []);
 
-  // Find a stored path that terminates at target (preferred).
   const findStoredPathEndingAtTarget = useCallback((data, target) => {
     if (!data) return null;
     const candidates = roomCandidates(target);
@@ -165,7 +160,6 @@ const NodeCanvas = ({
     return null;
   }, [roomCandidates]);
 
-  // Fallback search
   const findPathFallback = useCallback((data, target) => {
     if (!data) return null;
     const candidates = roomCandidates(target);
@@ -196,43 +190,26 @@ const NodeCanvas = ({
     return searchAnyContaining(data);
   }, [roomCandidates]);
 
-  // Trigger search when connections and endId are available.
   useEffect(() => {
-    if (!endId) {
-      console.log('No endId set yet.');
-      return;
-    }
-    if (!connections || (Array.isArray(connections) && connections.length === 0)) {
-      console.log('Waiting for connections to load...');
-      return;
-    }
+    if (!endId) return;
+    if (!connections || (Array.isArray(connections) && connections.length === 0)) return;
 
     const raw = String(endId);
-    console.log('Searching for target (raw):', raw);
-
     const primary = findStoredPathEndingAtTarget(connections, raw);
-    if (primary) {
-      console.log('Found stored path that ends at target for', raw, 'path length', primary.length);
-      return;
-    }
+    if (primary) return;
 
     const fallback = findPathFallback(connections, raw);
     if (fallback) {
-      console.log('Fallback found a path containing target (not as last element). Using it temporarily. path length', fallback.length);
       setPath(fallback);
       return;
     }
-
-    console.log('No path found for target', raw);
     setPath([]);
   }, [endId, connections, findStoredPathEndingAtTarget, findPathFallback]);
 
-  // Reset revealed labels whenever the route/path changes
   useEffect(() => {
     setRevealedSpecialIds(new Set());
   }, [path]);
 
-  // Draw canvas (robust: attach handlers before src, handle cached images)
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -241,36 +218,62 @@ const NodeCanvas = ({
     const image = new Image();
     const destPin = new Image();
     
-    // <-- Changed this to use the markerImage property
     destPin.src = markerImage; 
-
-    console.log('drawCanvas start, backgroundImage =', backgroundImage);
 
     const handleImageLoad = () => {
       const iw = image.width || 800;
       const ih = image.height || 600;
       const dpr = window.devicePixelRatio || 1;
-
-      // Let CSS scale the canvas by width while keeping coordinate system in native pixels
-      canvas.style.width = '100%';
-      canvas.style.height = 'auto';
-      canvas.width = Math.round(iw * dpr);
-      canvas.height = Math.round(ih * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      setWidth(iw);
-      setHeight(ih);
-
-      ctx.clearRect(0, 0, iw, ih);
-      ctx.drawImage(image, 0, 0, iw, ih);
-
       const yOffset = 0;
       const nodeMap = new Map(nodes.map(n => [String(n.ID).trim(), n]));
 
-      // Draw lines
+      // 1. CALCULATE ZOOM (BOUNDING BOX)
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      
+      if (Array.isArray(path) && path.length > 0) {
+        for (const nodeId of path) {
+          const node = nodeMap.get(String(nodeId).trim());
+          if (!node) continue;
+          const nx = parseFloat(node.X);
+          const ny = parseFloat(node.Y);
+          if (Number.isNaN(nx) || Number.isNaN(ny)) continue;
+          
+          const mY = ih - ny - yOffset;
+          if (nx < minX) minX = nx;
+          if (nx > maxX) maxX = nx;
+          if (mY < minY) minY = mY;
+          if (mY > maxY) maxY = mY;
+        }
+      }
+
+      let cropX = 0, cropY = 0, cropW = iw, cropH = ih;
+      const padding = 150; // Add 150px of breathing room around the route
+
+      // If a path exists, crop the canvas tightly around the path
+      if (minX !== Infinity) {
+        cropX = Math.max(0, minX - padding);
+        cropY = Math.max(0, minY - padding);
+        const maxBoxX = Math.min(iw, maxX + padding);
+        const maxBoxY = Math.min(ih, maxY + padding);
+        cropW = maxBoxX - cropX;
+        cropH = maxBoxY - cropY;
+      }
+
+      // 2. SET CANVAS DIMENSIONS TO CROPPED AREA
+      canvas.width = Math.round(cropW * dpr);
+      canvas.height = Math.round(cropH * dpr);
+      
+      // Offset the drawing context so the cropped area sits at (0,0)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.translate(-cropX, -cropY);
+
+      ctx.clearRect(cropX, cropY, cropW, cropH);
+      ctx.drawImage(image, 0, 0, iw, ih);
+
+      // 3. DRAW LINES
       if (Array.isArray(path) && path.length > 1) {
         ctx.strokeStyle = 'red';
-        ctx.lineWidth = 10; // <-- Increased from 4 to 10 for a thicker red line!
+        ctx.lineWidth = 10;
         ctx.lineCap = 'round';
         for (let i = 0; i < path.length - 1; i++) {
           const startNode = nodeMap.get(String(path[i]).trim());
@@ -294,7 +297,7 @@ const NodeCanvas = ({
         }
       }
 
-      // Draw nodes for the path (only the pin at the end)
+      // 4. DRAW FINAL DESTINATION PIN
       for (let i = 0; i < path.length; i++) {
         const nodeId = path[i];
         const isLastNode = (i === path.length - 1);
@@ -308,20 +311,14 @@ const NodeCanvas = ({
         const mappedY = ih - ny - yOffset;
 
         if (isLastNode) {
-          // Set how tall you want the marker to be
           const targetHeight = 70; 
-          
-          // Automatically calculate the width to keep the exact original proportions!
-          // (Defaults to a square if the image hasn't fully loaded its dimensions yet)
           const aspectRatio = (destPin.width && destPin.height) ? (destPin.width / destPin.height) : 1;
           const targetWidth = targetHeight * aspectRatio;
-
           ctx.drawImage(destPin, nx - (targetWidth / 2), mappedY - targetHeight, targetWidth, targetHeight);
         }
-        // Notice the 'else' block drawing the blue circles is completely removed here!
       }
 
-      // Draw special waypoint markers (nurse office, etc.)
+      // 5. DRAW SPECIAL MARKERS (e.g. Nurse)
       specialHitAreasRef.current = [];
       if (specialLocations.length > 0) {
         const specialByNodeId = new Map();
@@ -365,10 +362,9 @@ const NodeCanvas = ({
               radius: markerRadius + 8,
             });
 
-            // Always draw the waypoint icon marker
             ctx.beginPath();
             ctx.arc(nx, mappedY, markerRadius, 0, Math.PI * 2);
-            ctx.fillStyle = /*special.color ||*/ '#dddddd';
+            ctx.fillStyle = '#dddddd';
             ctx.fill();
             ctx.strokeStyle = special.borderColor || '#000000';
             ctx.lineWidth = 3;
@@ -384,7 +380,6 @@ const NodeCanvas = ({
               ctx.restore();
             }
 
-            // Only reveal label after user clicks/taps icon
             if (revealedSpecialIds.has(specialUniqueId)) {
               const labelText = special.name || 'Waypoint';
               const labelX = nx + 26;
@@ -484,7 +479,6 @@ const NodeCanvas = ({
     revealSpecialAtPoint(touch.clientX, touch.clientY);
   }, [revealSpecialAtPoint]);
 
-  // Call drawCanvas when both path and nodes are ready
   useEffect(() => {
     if (path.length > 0 && nodes.length > 0) {
       drawCanvas();
@@ -492,13 +486,21 @@ const NodeCanvas = ({
   }, [nodes, path, backgroundImage, drawCanvas]);
 
   return (
-  <canvas
-    ref={canvasRef}
-    onClick={handleCanvasClick}
-    onTouchStart={handleCanvasTouchStart}
-    style={{ touchAction: 'manipulation' }}
-  />
-);
+    <canvas
+      ref={canvasRef}
+      onClick={handleCanvasClick}
+      onTouchStart={handleCanvasTouchStart}
+      style={{ 
+        touchAction: 'manipulation',
+        width: '100%',
+        height: '100%',
+        maxHeight: '65vh',
+        objectFit: 'contain',
+        display: 'block',
+        margin: '0 auto' 
+      }}
+    />
+  );
 };
 
 export default NodeCanvas;
