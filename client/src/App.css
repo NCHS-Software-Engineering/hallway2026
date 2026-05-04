@@ -52,6 +52,22 @@
   box-shadow: var(--shadow-md);
 }
 
+.top-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1 1 auto;
+  margin-left: 320px;
+}
+
+.route-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  flex-wrap: nowrap;
+}
+
 /* header layout for logo and title */
 .header {
   display: flex;
@@ -245,7 +261,7 @@ canvas {
   display: inline-flex;      /* shrink to content width */
   align-items: center;
   gap: 10px;
-  padding: 15px 40px 15px 40px; /* Top, Right, Bottom, Left  */
+  padding: 20px 40px 20px 40px; /* Top, Right, Bottom, Left  */
   border-radius: 0;
   overflow: visible;         /* allow pseudo-element to show outside edges */
 }
@@ -297,7 +313,7 @@ canvas {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 22px 40px 21px 40px; /* Top, Right, Bottom, Left - increased vertical padding */
+  padding: 20px 40px 20px 40px; /* Top, Right, Bottom, Left */
   border-radius: 0;
   overflow: visible;         /* allow pseudo-element to show outside edges */
 }
