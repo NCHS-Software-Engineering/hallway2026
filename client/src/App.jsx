@@ -249,7 +249,7 @@ function App() {
 
         <div className="top-bar-controls">
           <div className="timer-block">
-            <span>Time Remaining: {Math.floor(remainingSeconds / 60)}:{String(remainingSeconds % 60).padStart(2, '0')}</span>
+            <span style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>Time Remaining: {Math.floor(remainingSeconds / 60)}:{String(remainingSeconds % 60).padStart(2, '0')}</span>
           </div>
           <div className="route-block">
             <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>
@@ -262,7 +262,7 @@ function App() {
               onChange={handleSelectChange}
               placeholder="Room #"
               className="room-input"
-              style={{ fontSize: '1.4rem', padding: '8px 10px', color: 'black', textAlign: 'center', width: '120px' }}
+              style={{ fontSize: '1.4rem', padding: '0px 10px', color: 'black', textAlign: 'center', width: '150px' }}
             />
           </div>
         </div>

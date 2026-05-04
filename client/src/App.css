@@ -57,16 +57,7 @@
   align-items: center;
   gap: 20px;
   flex: 1 1 auto;
-}
-
-.timer-block {
-  background: transparent;
-  padding: 10px 15px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  font-size: 1.2rem;
-  white-space: nowrap;
+  margin-left: 320px;
 }
 
 .route-block {
@@ -270,7 +261,7 @@ canvas {
   display: inline-flex;      /* shrink to content width */
   align-items: center;
   gap: 10px;
-  padding: 15px 40px 15px 40px; /* Top, Right, Bottom, Left  */
+  padding: 20px 40px 20px 40px; /* Top, Right, Bottom, Left  */
   border-radius: 0;
   overflow: visible;         /* allow pseudo-element to show outside edges */
 }
@@ -322,7 +313,7 @@ canvas {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 22px 40px 21px 40px; /* Top, Right, Bottom, Left - increased vertical padding */
+  padding: 20px 40px 20px 40px; /* Top, Right, Bottom, Left */
   border-radius: 0;
   overflow: visible;         /* allow pseudo-element to show outside edges */
 }
