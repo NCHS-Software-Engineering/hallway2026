@@ -52,6 +52,31 @@
   box-shadow: var(--shadow-md);
 }
 
+.top-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1 1 auto;
+}
+
+.timer-block {
+  background: transparent;
+  padding: 10px 15px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+
+.route-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  flex-wrap: nowrap;
+}
+
 /* header layout for logo and title */
 .header {
   display: flex;
