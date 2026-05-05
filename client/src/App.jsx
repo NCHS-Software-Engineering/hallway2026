@@ -3,10 +3,6 @@ import './App.css';
 import IconButton from '@mui/material/IconButton';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import MapComponentb from "./MapComponentb";
-import MapComponentf1 from "./MapComponentf1";
-import MapComponentf2 from "./MapComponentf2";
-import MapComponentf3 from "./MapComponentf3";
 import JsonRead from "./Components/JsonRead";
 import NCHSlogo from "./img/NCHSlogo.png";
 import QRCode from "react-qr-code"; 
@@ -19,6 +15,17 @@ function App() {
   const warningTimeoutRef = useRef(null);
   const [showWarning, setShowWarning] = useState(false);
 
+  // Detect if the user is on a mobile device
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // 1. Read the room from the URL when the app loads
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -30,6 +37,9 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Disable timeout on mobile so the map doesn't disappear while the student is walking!
+    if (isMobile) return;
+
     if (route !== null && route !== '') {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
@@ -65,7 +75,7 @@ function App() {
         warningTimeoutRef.current = null;
       }
     };
-  }, [route]);
+  }, [route, isMobile]);
 
   const handleImStillHere = () => {
     setShowWarning(false);
@@ -89,7 +99,7 @@ function App() {
   // Styles for rendering maps side by side
   const multiFloorContainerStyle = {
     display: 'flex',
-    flexDirection: 'row',
+    flexDirection: isMobile ? 'column' : 'row', // Stack maps on mobile if multi-floor
     gap: '20px',
     width: '100%',
     height: '100%',
@@ -101,9 +111,11 @@ function App() {
     flex: 1,
     minWidth: 0,
     height: '100%',
+    width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center'
   };
 
   if (route === null || route === '') {
@@ -149,78 +161,98 @@ function App() {
     setRoute(selectedRoom);
   };
 
-  // 2. HARDCODED LIVE URL: This guarantees the QR code points to the real AWS server
+  // HARDCODED LIVE URL
   const currentUrl = `http://nav.redhawks.us/?room=${room}`;
 
-  return (
-    <div className="app-container">
-      {/* TOP BAR */}
-      <header className="top-bar">
-        <div className="header">
-          <div className="header-left">
-            <img src={NCHSlogo} alt="NCHS Logo" className="logo" />
-            <h1>Naperville Central Class Finder</h1>
+    return (
+    <div className="app-container" style={isMobile ? { height: '100dvh', width: '100vw', overflow: 'hidden', display: 'flex', flexDirection: 'column', margin: 0, padding: 0, background: '#000' } : {}}>
+      
+      {/* ONLY RENDER TOP BAR ON DESKTOP */}
+      {!isMobile && (
+        <header className="top-bar">
+          <div className="header">
+            <div className="header-left">
+              <img src={NCHSlogo} alt="NCHS Logo" className="logo" />
+              <h1>Naperville Central Class Finder</h1>
+            </div>
           </div>
-        </div>
 
-        <div className="route-block">
-          <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
-            Route to:
-          </label>
-          <input
-            id="rooms-end"
-            type="text"
-            value={room}
-            onChange={handleSelectChange}
-            placeholder="Room #"
-            className="room-input"
-            style={{ fontSize: '1.4rem', padding: '8px 10px', color: 'black', textAlign: 'center' }}
-          />
-          <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
-            Route
-          </button>
-        </div>
-      </header>
+          <div className="route-block">
+            <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
+              Route to:
+            </label>
+            <input
+              id="rooms-end"
+              type="text"
+              value={room}
+              onChange={handleSelectChange}
+              placeholder="Room #"
+              className="room-input"
+              style={{ fontSize: '1.4rem', padding: '8px 10px', color: 'black', textAlign: 'center' }}
+            />
+            <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
+              Route
+            </button>
+          </div>
+        </header>
+      )}
 
       {/* MAIN LAYOUT */}
-      <div className="main-layout">
-        {/* LEFT PANEL */}
-        <aside className="left-panel">
-          <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
-          <h3>Contributors</h3>
-          <hr />
-          <p>Shawn Plackiyil '25</p>
-          <p>Daniel Kozlowski '26</p>
-          <p>Yutian Wang '26</p>
-          <p>Fionn McCabe-Wild '26</p>
+      <div className="main-layout" style={isMobile ? { flex: 1, display: 'flex', width: '100%', height: '100%', margin: 0, padding: 0 } : {}}>
+        
+        {/* ONLY RENDER LEFT PANEL ON DESKTOP */}
+        {!isMobile && (
+          <aside className="left-panel">
+            <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
+            <h3>Contributors</h3>
+            <hr />
+            <p>Shawn Plackiyil '25</p>
+            <p>Daniel Kozlowski '26</p>
+            <p>Yutian Wang '26</p>
+            <p>Fionn McCabe-Wild '26</p>
 
-          {/* 3. Render the QR Code when there is an active route */}
-          {route && route !== '' && (
-            <div style={{ marginTop: '40px', background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
-              <p style={{ color: 'black', fontWeight: 'bold', marginBottom: '10px', fontSize: '1.1rem' }}>Take the Map With You</p>
-              <QRCode value={currentUrl} size={150} />
-            </div>
-          )}
-        </aside>
+            {route && route !== '' && (
+              <div style={{ marginTop: '40px', background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+                <p style={{ color: 'black', fontWeight: 'bold', marginBottom: '10px', fontSize: '1.1rem' }}>Take the Map With You</p>
+                <QRCode value={currentUrl} size={150} />
+              </div>
+            )}
+          </aside>
+        )}
 
         {/* MAP SECTION */}
-        <main className="map-section">
-          <div className="map-card">
+        <main className="map-section" style={isMobile ? { flex: 1, width: '100%', height: '100%', padding: 0, margin: 0, position: 'relative', display: 'flex', flexDirection: 'column' } : {}}>
+          
+          {/* This overrides the App.css .map-card limits so it touches the edges */}
+          <div className="map-card" style={isMobile ? { 
+            flex: 1, 
+            width: '100vw', 
+            height: '100%', 
+            maxWidth: 'none', 
+            padding: 0, 
+            margin: 0, 
+            borderRadius: 0, 
+            boxShadow: 'none', 
+            background: 'transparent',
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center' 
+          } : {}}>
             {RenderedComponent}
           </div>
 
-          <div className="floor-label">
-            {floorLabelText} {/* dynamically renders the right floor name */}
+          <div className="floor-label" style={isMobile ? { position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0, 0, 0, 0.75)', color: 'white', padding: '12px 24px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.2rem', boxShadow: '0px 4px 10px rgba(0,0,0,0.5)', zIndex: 10 } : {}}>
+            {floorLabelText}
           </div>
         </main>
       </div>
 
       {/* WARNING MODAL */}
-      {showWarning && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(39, 0, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#f73e1e', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center' }}>
+      {showWarning && !isMobile && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(39, 0, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+          <div style={{ background: '#f73e1e', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center', color: 'white' }}>
             <p style={{ fontSize: '1.1rem', marginBottom: '12px' }}>Are you still here? Your session will expire soon.</p>
-            <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px' }}>I'm still here</button>
+            <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px', background: 'white', color: 'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>I'm still here</button>
           </div>
         </div>
       )}

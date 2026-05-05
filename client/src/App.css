@@ -23,7 +23,8 @@
 ========================= */
 
 .app-container {
-  min-height: 100vh;
+  height: 100vh;           /* Force exactly 100% of screen height */
+  overflow: hidden;        /* Kill the scrollbar entirely */
   background: var(--bg-main);
   display: flex;
   flex-direction: column;
@@ -114,10 +115,12 @@
 ========================= */
 
 .main-layout {
-  flex: 1;
+  flex: 1;                 /* Fill remaining space under header */
+  overflow: hidden;        /* Prevent children from pushing this down */
   display: flex;
   gap: 20px;
 }
+
 
 /* =========================
    LEFT PANEL
@@ -143,6 +146,7 @@
 
 .map-section {
   flex: 1;
+  overflow: hidden;        /* Force section to respect container limits */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -153,14 +157,17 @@
 /* Map Card (Hero Element) */
 
 .map-card {
+  flex: 1;                 /* Grow to fill remaining map-section space */
+  overflow: hidden;        /* Prevent canvas from escaping the box */
+  display: flex;           /* Flex keeps the canvas perfectly centered inside */
+  align-items: center;
+  justify-content: center;
   width: 100%;
   max-width: 1200px;
   background: var(--card-bg);
   padding: 18px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  transition: transform 0.2s ease;
-  overflow: hidden;
 }
 
 /* =========================
