@@ -17,8 +17,6 @@ const NodeCanvas = ({
   const [specialLocations, setSpecialLocations] = useState([]);
   const [specialLocationIcons, setSpecialLocationIcons] = useState({});
   const [revealedSpecialIds, setRevealedSpecialIds] = useState(() => new Set());
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
   const canvasRef = useRef(null);
   const specialHitAreasRef = useRef([]);
 
@@ -32,7 +30,7 @@ const NodeCanvas = ({
     img.onerror = () => console.error('Failed to load stairs_icon.png');
   }, []);
 
-  // Load important waypoint definitions (nurse office database for now)
+  // Load important waypoint definitions
   useEffect(() => {
     fetch('/specialLocations.json')
       .then((res) => {
@@ -220,7 +218,7 @@ const NodeCanvas = ({
     
     destPin.src = markerImage; 
 
-        const handleImageLoad = () => {
+    const handleImageLoad = () => {
       const iw = image.width || 800;
       const ih = image.height || 600;
       const dpr = window.devicePixelRatio || 1;
@@ -246,10 +244,8 @@ const NodeCanvas = ({
         }
       }
 
-            let cropX = 0, cropY = 0, cropW = iw, cropH = ih;
-      
-      // 1. Change padding from 200 to 100 (hugs the red line tighter)
-      const padding = 100; 
+      let cropX = 0, cropY = 0, cropW = iw, cropH = ih;
+      const padding = 100; // Tighter padding around the line
 
       if (minX !== Infinity) {
         cropX = Math.max(0, minX - padding);
@@ -259,7 +255,7 @@ const NodeCanvas = ({
         cropW = maxBoxX - cropX;
         cropH = maxBoxY - cropY;
 
-        // 2. Change MIN_CROP_SIZE from 1200 to 600 (allows it to zoom in 2x closer!)
+        // Force a minimum zoom size (600px) so it doesn't zoom in too far on tiny routes
         const MIN_CROP_SIZE = 600; 
         
         if (cropW < MIN_CROP_SIZE) {
@@ -336,7 +332,7 @@ const NodeCanvas = ({
         }
       }
 
-      // 5. DRAW SPECIAL MARKERS (e.g. Nurse)
+      // 5. DRAW SPECIAL MARKERS
       specialHitAreasRef.current = [];
       if (specialLocations.length > 0) {
         const specialByNodeId = new Map();
@@ -503,7 +499,7 @@ const NodeCanvas = ({
     }
   }, [nodes, path, backgroundImage, drawCanvas]);
 
-      return (
+  return (
     <canvas
       ref={canvasRef}
       onClick={handleCanvasClick}
