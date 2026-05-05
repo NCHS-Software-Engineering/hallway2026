@@ -220,7 +220,7 @@ const NodeCanvas = ({
     
     destPin.src = markerImage; 
 
-    const handleImageLoad = () => {
+        const handleImageLoad = () => {
       const iw = image.width || 800;
       const ih = image.height || 600;
       const dpr = window.devicePixelRatio || 1;
@@ -246,10 +246,11 @@ const NodeCanvas = ({
         }
       }
 
-      let cropX = 0, cropY = 0, cropW = iw, cropH = ih;
-      const padding = 150; // Add 150px of breathing room around the route
+            let cropX = 0, cropY = 0, cropW = iw, cropH = ih;
+      
+      // 1. Change padding from 200 to 100 (hugs the red line tighter)
+      const padding = 100; 
 
-      // If a path exists, crop the canvas tightly around the path
       if (minX !== Infinity) {
         cropX = Math.max(0, minX - padding);
         cropY = Math.max(0, minY - padding);
@@ -257,6 +258,23 @@ const NodeCanvas = ({
         const maxBoxY = Math.min(ih, maxY + padding);
         cropW = maxBoxX - cropX;
         cropH = maxBoxY - cropY;
+
+        // 2. Change MIN_CROP_SIZE from 1200 to 600 (allows it to zoom in 2x closer!)
+        const MIN_CROP_SIZE = 600; 
+        
+        if (cropW < MIN_CROP_SIZE) {
+          const centerX = cropX + cropW / 2;
+          cropW = Math.min(iw, MIN_CROP_SIZE);
+          cropX = Math.max(0, centerX - cropW / 2);
+          if (cropX + cropW > iw) cropX = iw - cropW;
+        }
+        
+        if (cropH < MIN_CROP_SIZE) {
+          const centerY = cropY + cropH / 2;
+          cropH = Math.min(ih, MIN_CROP_SIZE);
+          cropY = Math.max(0, centerY - cropH / 2);
+          if (cropY + cropH > ih) cropY = ih - cropH;
+        }
       }
 
       // 2. SET CANVAS DIMENSIONS TO CROPPED AREA
@@ -485,19 +503,16 @@ const NodeCanvas = ({
     }
   }, [nodes, path, backgroundImage, drawCanvas]);
 
-  return (
+      return (
     <canvas
       ref={canvasRef}
       onClick={handleCanvasClick}
       onTouchStart={handleCanvasTouchStart}
       style={{ 
-        touchAction: 'manipulation',
         width: '100%',
         height: '100%',
-        maxHeight: '65vh',
-        objectFit: 'contain',
+        objectFit: 'contain', 
         display: 'block',
-        margin: '0 auto' 
       }}
     />
   );
