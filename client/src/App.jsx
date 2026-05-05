@@ -13,7 +13,9 @@ function App() {
   const [route, setRoute] = useState(null);
   const timeoutRef = useRef(null);
   const warningTimeoutRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
   const [showWarning, setShowWarning] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState(60);
 
   // Detect if the user is on a mobile device
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -41,19 +43,50 @@ function App() {
     if (isMobile) return;
 
     if (route !== null && route !== '') {
+      // Clear any existing timers/intervals
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
 
-      warningTimeoutRef.current = setTimeout(() => {
-        setShowWarning(true);
-      }, 30000);
+      // Reset remaining seconds to 60
+      setRemainingSeconds(60);
+      setShowWarning(false);
 
+      // Start countdown interval
+      let secondsLeft = 60;
+      countdownIntervalRef.current = setInterval(() => {
+        secondsLeft -= 1;
+        setRemainingSeconds(secondsLeft);
+
+        // Show warning when 15 seconds remain
+        if (secondsLeft === 15) {
+          setShowWarning(true);
+        }
+
+        // Reset everything when countdown reaches 0
+        if (secondsLeft <= 0) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+          setRoom('');
+          setRoute(null);
+          setShowWarning(false);
+          setRemainingSeconds(60);
+        }
+      }, 1000);
+
+      // Timeout to ensure cleanup at 60 seconds
       timeoutRef.current = setTimeout(() => {
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
         setRoom('');
         setRoute(null);
         setShowWarning(false);
-      }, 40000);
+        setRemainingSeconds(60);
+      }, 60000);
     } else {
+      // Clear timers and hide warning when no route
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
@@ -62,7 +95,12 @@ function App() {
         clearTimeout(warningTimeoutRef.current);
         warningTimeoutRef.current = null;
       }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
       setShowWarning(false);
+      setRemainingSeconds(60);
     }
 
     return () => {
@@ -74,23 +112,64 @@ function App() {
         clearTimeout(warningTimeoutRef.current);
         warningTimeoutRef.current = null;
       }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
     };
   }, [route, isMobile]);
 
   const handleImStillHere = () => {
+    // Hide warning and restart countdown
     setShowWarning(false);
-    if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (warningTimeoutRef.current) {
+      clearTimeout(warningTimeoutRef.current);
+    }
 
-    warningTimeoutRef.current = setTimeout(() => {
-      setShowWarning(true);
-    }, 30000);
+    // Clear existing timers
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
 
+    // Reset remaining seconds to 60
+    setRemainingSeconds(60);
+
+    // Start new countdown interval
+    let secondsLeft = 60;
+    countdownIntervalRef.current = setInterval(() => {
+      secondsLeft -= 1;
+      setRemainingSeconds(secondsLeft);
+
+      // Show warning when 15 seconds remain
+      if (secondsLeft === 15) {
+        setShowWarning(true);
+      }
+
+      // Reset everything when countdown reaches 0
+      if (secondsLeft <= 0) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+        setRoom('');
+        setRoute(null);
+        setShowWarning(false);
+        setRemainingSeconds(60);
+      }
+    }, 1000);
+
+    // Timeout to ensure cleanup at 60 seconds
     timeoutRef.current = setTimeout(() => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
       setRoom('');
       setRoute(null);
       setShowWarning(false);
-    }, 40000);
+      setRemainingSeconds(60);
+    }, 60000);
   };
 
   let RenderedComponent;
@@ -158,7 +237,12 @@ function App() {
   const handleSelectChange = (e) => {
     const selectedRoom = e.target.value;
     setRoom(selectedRoom);
-    setRoute(selectedRoom);
+    // Start the timer immediately when any input is entered
+    if (selectedRoom && selectedRoom.length > 0) {
+      setRoute(selectedRoom);
+    } else {
+      setRoute(null);
+    }
   };
 
   // HARDCODED LIVE URL
@@ -179,6 +263,12 @@ function App() {
 
           <div className="route-block">
             <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
+        <div className="top-bar-controls">
+          <div className="timer-block">
+            <span style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>Time Remaining: {Math.floor(remainingSeconds / 60)}:{String(remainingSeconds % 60).padStart(2, '0')}</span>
+          </div>
+          <div className="route-block">
+            <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>
               Route to:
             </label>
             <input
@@ -196,6 +286,11 @@ function App() {
           </div>
         </header>
       )}
+              style={{ fontSize: '1.4rem', padding: '0px 10px', color: 'black', textAlign: 'center', width: '150px' }}
+            />
+          </div>
+        </div>
+      </header>
 
       {/* MAIN LAYOUT */}
       <div className="main-layout" style={isMobile ? { flex: 1, display: 'flex', width: '100%', height: '100%', margin: 0, padding: 0 } : {}}>
