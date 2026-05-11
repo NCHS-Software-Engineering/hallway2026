@@ -13,7 +13,9 @@ function App() {
   const [route, setRoute] = useState(null);
   const timeoutRef = useRef(null);
   const warningTimeoutRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
   const [showWarning, setShowWarning] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState(60);
 
   // Detect if the user is on a mobile device
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -37,23 +39,51 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Disable timeout on mobile so the map doesn't disappear while the student is walking!
-    if (isMobile) return;
-
     if (route !== null && route !== '') {
+      // Clear any existing timers/intervals
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
 
-      warningTimeoutRef.current = setTimeout(() => {
-        setShowWarning(true);
-      }, 30000);
+      // Reset remaining seconds to 60
+      setRemainingSeconds(60);
+      setShowWarning(false);
 
+      // Start countdown interval
+      let secondsLeft = 60;
+      countdownIntervalRef.current = setInterval(() => {
+        secondsLeft -= 1;
+        setRemainingSeconds(secondsLeft);
+
+        // Show warning when 15 seconds remain
+        if (secondsLeft === 15) {
+          setShowWarning(true);
+        }
+
+        // Reset everything when countdown reaches 0
+        if (secondsLeft <= 0) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+          setRoom('');
+          setRoute(null);
+          setShowWarning(false);
+          setRemainingSeconds(60);
+        }
+      }, 1000);
+
+      // Timeout to ensure cleanup at 60 seconds
       timeoutRef.current = setTimeout(() => {
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
         setRoom('');
         setRoute(null);
         setShowWarning(false);
-      }, 40000);
+        setRemainingSeconds(60);
+      }, 60000);
     } else {
+      // Clear timers and hide warning when no route
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
@@ -62,7 +92,12 @@ function App() {
         clearTimeout(warningTimeoutRef.current);
         warningTimeoutRef.current = null;
       }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
       setShowWarning(false);
+      setRemainingSeconds(60);
     }
 
     return () => {
@@ -74,23 +109,64 @@ function App() {
         clearTimeout(warningTimeoutRef.current);
         warningTimeoutRef.current = null;
       }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
     };
-  }, [route, isMobile]);
+  }, [route]);
 
   const handleImStillHere = () => {
+    // Hide warning and restart countdown
     setShowWarning(false);
-    if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (warningTimeoutRef.current) {
+      clearTimeout(warningTimeoutRef.current);
+    }
 
-    warningTimeoutRef.current = setTimeout(() => {
-      setShowWarning(true);
-    }, 30000);
+    // Clear existing timers
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+    }
 
+    // Reset remaining seconds to 60
+    setRemainingSeconds(60);
+
+    // Start new countdown interval
+    let secondsLeft = 60;
+    countdownIntervalRef.current = setInterval(() => {
+      secondsLeft -= 1;
+      setRemainingSeconds(secondsLeft);
+
+      // Show warning when 15 seconds remain
+      if (secondsLeft === 15) {
+        setShowWarning(true);
+      }
+
+      // Reset everything when countdown reaches 0
+      if (secondsLeft <= 0) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+        setRoom('');
+        setRoute(null);
+        setShowWarning(false);
+        setRemainingSeconds(60);
+      }
+    }, 1000);
+
+    // Timeout to ensure cleanup at 60 seconds
     timeoutRef.current = setTimeout(() => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
       setRoom('');
       setRoute(null);
       setShowWarning(false);
-    }, 40000);
+      setRemainingSeconds(60);
+    }, 60000);
   };
 
   let RenderedComponent;
@@ -158,7 +234,12 @@ function App() {
   const handleSelectChange = (e) => {
     const selectedRoom = e.target.value;
     setRoom(selectedRoom);
-    setRoute(selectedRoom);
+    // Start the timer immediately when any input is entered
+    if (selectedRoom && selectedRoom.length > 0) {
+      setRoute(selectedRoom);
+    } else {
+      setRoute(null);
+    }
   };
 
   // HARDCODED LIVE URL
@@ -167,18 +248,21 @@ function App() {
   return (
     <div className="app-container" style={isMobile ? { height: '100dvh', width: '100vw', overflow: 'hidden', display: 'flex', flexDirection: 'column', margin: 0, padding: 0, background: '#000' } : {}}>
       
-      {/* ONLY RENDER TOP BAR ON DESKTOP */}
-      {!isMobile && (
-        <header className="top-bar">
-          <div className="header">
-            <div className="header-left">
-              <img src={NCHSlogo} alt="NCHS Logo" className="logo" />
-              <h1>Naperville Central Class Finder</h1>
-            </div>
+      {/* TOP BAR */}
+      <header className="top-bar">
+        <div className="header">
+          <div className="header-left">
+            <img src={NCHSlogo} alt="NCHS Logo" className="logo" />
+            <h1>Naperville Central Class Finder</h1>
           </div>
+        </div>
 
+        <div className="top-bar-controls">
+          <div className="timer-block">
+            <span style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>Time Remaining: {Math.floor(remainingSeconds / 60)}:{String(remainingSeconds % 60).padStart(2, '0')}</span>
+          </div>
           <div className="route-block">
-            <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem' }}>
+            <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>
               Route to:
             </label>
             <input
@@ -188,71 +272,51 @@ function App() {
               onChange={handleSelectChange}
               placeholder="Room #"
               className="room-input"
-              style={{ fontSize: '1.4rem', padding: '8px 10px', color: 'black', textAlign: 'center' }}
+              style={{ fontSize: '1.4rem', padding: '0px 10px', color: 'black', textAlign: 'center', width: '150px' }}
             />
-            <button onClick={() => setRoute(room)} style={{ fontSize: '1.6rem' }}>
-              Route
-            </button>
           </div>
-        </header>
-      )}
+        </div>
+      </header>
 
       {/* MAIN LAYOUT */}
-      <div className="main-layout" style={isMobile ? { flex: 1, display: 'flex', width: '100%', height: '100%', margin: 0, padding: 0 } : {}}>
-        
-        {/* ONLY RENDER LEFT PANEL ON DESKTOP */}
-        {!isMobile && (
-          <aside className="left-panel">
-            <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
-            <h3>Contributors</h3>
-            <hr />
-            <p>Shawn Plackiyil '25</p>
-            <p>Daniel Kozlowski '26</p>
-            <p>Yutian Wang '26</p>
-            <p>Fionn McCabe-Wild '26</p>
+      <div className="main-layout">
+        {/* LEFT PANEL */}
+        <aside className="left-panel">
+          <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
+          <h3>Contributors</h3>
+          <hr />
+          <p>Shawn Plackiyil '25</p>
+          <p>Daniel Kozlowski '26</p>
+          <p>Yutian Wang '26</p>
+          <p>Fionn McCabe-Wild '26</p>
 
-            {route && route !== '' && (
-              <div style={{ marginTop: '40px', background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
-                <p style={{ color: 'black', fontWeight: 'bold', marginBottom: '10px', fontSize: '1.1rem' }}>Take the Map With You</p>
-                <QRCode value={currentUrl} size={150} />
-              </div>
-            )}
-          </aside>
-        )}
+          {/* 3. Render the QR Code when there is an active route */}
+          {route && route !== '' && (
+            <div style={{ marginTop: '40px', background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ color: 'black', fontWeight: 'bold', marginBottom: '10px', fontSize: '1.1rem' }}>Take the Map With You</p>
+              <QRCode value={currentUrl} size={150} />
+            </div>
+          )}
+        </aside>
 
         {/* MAP SECTION */}
-        <main className="map-section" style={isMobile ? { flex: 1, width: '100%', height: '100%', padding: 0, margin: 0, position: 'relative', display: 'flex', flexDirection: 'column' } : {}}>
-          
-          {/* This overrides the App.css .map-card limits so it touches the edges */}
-          <div className="map-card" style={isMobile ? { 
-            flex: 1, 
-            width: '100vw', 
-            height: '100%', 
-            maxWidth: 'none', 
-            padding: 0, 
-            margin: 0, 
-            borderRadius: 0, 
-            boxShadow: 'none', 
-            background: 'transparent',
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center' 
-          } : {}}>
+        <main className="map-section">
+          <div className="map-card">
             {RenderedComponent}
           </div>
 
-          <div className="floor-label" style={isMobile ? { position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0, 0, 0, 0.75)', color: 'white', padding: '12px 24px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.2rem', boxShadow: '0px 4px 10px rgba(0,0,0,0.5)', zIndex: 10 } : {}}>
-            {floorLabelText}
+          <div className="floor-label">
+            {floorLabelText} {/* dynamically renders the right floor name */}
           </div>
         </main>
       </div>
 
       {/* WARNING MODAL */}
-      {showWarning && !isMobile && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(39, 0, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
-          <div style={{ background: '#f73e1e', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center', color: 'white' }}>
+      {showWarning && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(39, 0, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#f73e1e', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center' }}>
             <p style={{ fontSize: '1.1rem', marginBottom: '12px' }}>Are you still here? Your session will expire soon.</p>
-            <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px', background: 'white', color: 'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>I'm still here</button>
+            <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px' }}>I'm still here</button>
           </div>
         </div>
       )}
