@@ -335,6 +335,10 @@ const NodeCanvas = ({
       // 5. DRAW SPECIAL MARKERS
       specialHitAreasRef.current = [];
       if (specialLocations.length > 0) {
+        // Extract floor number from csvSrc (p1.csv -> 1, p2.csv -> 2, p3.csv -> 3)
+        const floorMatch = csvSrc.match(/p(\d)/);
+        const currentFloor = floorMatch ? parseInt(floorMatch[1]) : 1;
+        
         const specialByNodeId = new Map();
         specialLocations.forEach((s) => {
           const nodeIds = Array.isArray(s.nodeIds) ? s.nodeIds : (s.id ? [s.id] : []);
@@ -351,6 +355,9 @@ const NodeCanvas = ({
           const key = String(nodeId).trim();
           const specials = specialByNodeId.get(key);
           if (!specials) continue;
+          
+          // Only render waypoints if on first floor
+          if (currentFloor !== 1) continue;
 
           const node = nodeMap.get(key);
           if (!node) continue;
