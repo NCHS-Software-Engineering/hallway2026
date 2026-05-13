@@ -301,13 +301,35 @@ function App() {
 
         {/* MAP SECTION */}
         <main className="map-section">
-          <div className="map-card">
-            {RenderedComponent}
-          </div>
+          {(route === null || route === '') ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              height: '100%'
+            }}>
+              <img 
+                src="/nchs_welcome.png" 
+                alt="Welcome to NCHS" 
+                style={{
+                  maxWidth: '90%',
+                  maxHeight: '90%',
+                  objectFit: 'contain'
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="map-card">
+                {RenderedComponent}
+              </div>
 
-          <div className="floor-label">
-            {floorLabelText} {/* dynamically renders the right floor name */}
-          </div>
+              <div className="floor-label">
+                {floorLabelText} {/* dynamically renders the right floor name */}
+              </div>
+            </>
+          )}
         </main>
       </div>
 
