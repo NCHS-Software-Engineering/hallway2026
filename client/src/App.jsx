@@ -282,13 +282,21 @@ function App() {
       <div className="main-layout">
         {/* LEFT PANEL */}
         <aside className="left-panel">
-          <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
           <h3>Contributors</h3>
-          <hr />
+          <hr/>
+          <p style={{ fontStyle: "oblique" }}>Pathfinders, 2025</p>
+          
+          
           <p>Shawn Plackiyil '25</p>
           <p>Daniel Kozlowski '26</p>
           <p>Yutian Wang '26</p>
           <p>Fionn McCabe-Wild '26</p>
+<hr />
+          <p style={{ fontStyle: "oblique" }}>Aisle Be Back, 2026</p>
+          
+          <p>Matthew Hannemann '26</p>
+          <p>Connor Kasper '27</p>
+          <p>Jonathan Wang '26</p>
 
           {/* 3. Render the QR Code when there is an active route */}
           {route && route !== '' && (
