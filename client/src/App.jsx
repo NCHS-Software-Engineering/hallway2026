@@ -175,18 +175,21 @@ function App() {
   // Styles for rendering maps side by side
   const multiFloorContainerStyle = {
     display: 'flex',
-    flexDirection: isMobile ? 'column' : 'row', // Stack maps on mobile if multi-floor
-    gap: '20px',
+    flexDirection: isMobile ? 'column' : 'row', 
+    gap: isMobile ? '5px' : '20px',
     width: '100%',
     height: '100%',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    boxSizing: 'border-box',
+    padding: isMobile ? '5px' : '0'
   };
 
   const mapWrapperStyle = {
     flex: 1,
     minWidth: 0,
-    height: '100%',
+    // When stacked on mobile, each map takes half height
+    height: isMobile ? 'calc(75% - 2.5px)' : '100%', 
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
@@ -246,7 +249,10 @@ function App() {
   const currentUrl = `http://nav.redhawks.us/?room=${room}`;
 
   return (
-    <div className="app-container" style={isMobile ? { height: '100dvh', width: '100vw', overflow: 'hidden', display: 'flex', flexDirection: 'column', margin: 0, padding: 0, background: '#000' } : {}}>
+    <div 
+  className="app-container" 
+  style={isMobile ? { width: '100vw', display: 'flex', flexDirection: 'column', margin: 0, padding: 0, background: '#000' } : {}}
+>
       
       {/* TOP BAR */}
       <header className="top-bar">
@@ -259,7 +265,11 @@ function App() {
 
         <div className="top-bar-controls">
           <div className="timer-block">
-            <span style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>Time Remaining: {Math.floor(remainingSeconds / 60)}:{String(remainingSeconds % 60).padStart(2, '0')}</span>
+            <span style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>
+              Time Remaining: {remainingSeconds < 60 
+                ? remainingSeconds 
+                : `${Math.floor(remainingSeconds / 60)}:${String(remainingSeconds % 60).padStart(2, '0')}`}
+            </span>
           </div>
           <div className="route-block">
             <label htmlFor="rooms-end" style={{ fontWeight: 500, fontSize: '1.6rem', whiteSpace: 'nowrap' }}>
@@ -299,7 +309,7 @@ function App() {
           <p>Jonathan Wang '26</p>
 
           {/* 3. Render the QR Code when there is an active route */}
-          {route && route !== '' && (
+          {route && route !== '' && !isMobile && (
             <div style={{ marginTop: '40px', background: 'white', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
               <p style={{ color: 'black', fontWeight: 'bold', marginBottom: '10px', fontSize: '1.1rem' }}>Take the Map With You</p>
               <QRCode value={currentUrl} size={150} />
@@ -344,9 +354,9 @@ function App() {
       {/* WARNING MODAL */}
       {showWarning && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(39, 0, 0, 0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#f73e1e', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center' }}>
+          <div style={{ background: '#f73e1e', color: 'white', padding: '20px', borderRadius: '8px', maxWidth: '90%', width: '420px', textAlign: 'center' }}>
             <p style={{ fontSize: '1.1rem', marginBottom: '12px' }}>Are you still here? Your session will expire soon.</p>
-            <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px' }}>I'm still here</button>
+            <button onClick={handleImStillHere} style={{ fontSize: '1rem', padding: '8px 12px' }}>I'm Still Here</button>
           </div>
         </div>
       )}
